@@ -1,7 +1,9 @@
 import os
 
-from flask import Flask, Response, jsonify, make_response, render_template
+from flask import Flask, Response, make_response, render_template
 from dotenv import load_dotenv
+
+from database import DBHelper
 
 
 
@@ -9,6 +11,8 @@ load_dotenv()
 
 app = Flask(__name__, template_folder='web/templates', static_folder='web/static')
 app.jinja_env.auto_reload = True
+
+database = DBHelper(os.environ['PG_HOST'], int(os.environ['PG_PORT']), os.environ['PG_USER'], os.environ['PG_PASSWD'], os.environ['PG_DB'])
 
 
 

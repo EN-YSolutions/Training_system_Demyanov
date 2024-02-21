@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS "hometasks"
     CONSTRAINT "pk_hometask_id"
         PRIMARY KEY ("id"),
     CONSTRAINT "fk_hometask_task_id"
-        FOREIGN KEY ("task_id") REFERENCES "tasks"("id") ON DELETE CASCADE
+        FOREIGN KEY ("task_id") REFERENCES "tasks"("id") ON DELETE CASCADE,
     CONSTRAINT "fk_hometask_student_id"
         FOREIGN KEY ("student_id") REFERENCES "users"("id") ON DELETE CASCADE
 );
@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS "deadlines"
         FOREIGN KEY ("group_id") REFERENCES "groups"("id") ON DELETE CASCADE,
     CONSTRAINT "fk_deadline_lesson_id"
         FOREIGN KEY ("lesson_id") REFERENCES "lessons"("id") ON DELETE CASCADE
-)
+);
 
 
 CREATE TABLE IF NOT EXISTS "progress"

@@ -1,6 +1,5 @@
 from enum import Enum
 from dataclasses import dataclass
-from tkinter import N
 
 from uuid import UUID
 from click import group
