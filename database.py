@@ -2,7 +2,6 @@ from enum import Enum
 from dataclasses import dataclass
 
 from uuid import UUID
-from click import group
 
 import psycopg
 
