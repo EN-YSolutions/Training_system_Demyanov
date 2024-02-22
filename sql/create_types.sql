@@ -20,7 +20,7 @@ $$;
 
 DO $$
 BEGIN
-    CREATE TYPE "task_status" AS ENUM ('not completed', 'pending', 'revision needed', 'completed', 'failed');
+    CREATE TYPE "task_status" AS ENUM ('not completed', 'pending', 'revision needed', 'correct', 'incorrect');
 EXCEPTION
     WHEN duplicate_object THEN
         NULL;

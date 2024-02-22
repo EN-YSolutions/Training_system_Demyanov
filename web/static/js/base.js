@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () =>
 
     switch (document.location.pathname)
     {
-        case '/':
+        case '/users':
             sidebar_users.forEach(e => e.classList.add('active'));
             breadcrumb_users.removeAttribute('style');
             break;
