@@ -22,44 +22,64 @@ document.addEventListener('DOMContentLoaded', () =>
     const sidebar_group_info = document.querySelectorAll('#sidebar_group_info');
     const sidebar_tasks_info = document.querySelectorAll('#sidebar_tasks_info');
 
-    const breadcrumb_users = document.querySelector('#breadcrumb_users');
-    const breadcrumb_groups = document.querySelector('#breadcrumb_groups');
-    const breadcrumb_courses = document.querySelector('#breadcrumb_courses');
+    const breadcrumb_users = document.querySelectorAll('#breadcrumb_users');
+    const breadcrumb_groups = document.querySelectorAll('#breadcrumb_groups');
+    const breadcrumb_courses = document.querySelectorAll('#breadcrumb_courses');
 
-    const breadcrumb_add_to_group = document.querySelector('#breadcrumb_add_to_group');
-    const breadcrumb_course_edit = document.querySelector('#breadcrumb_course_edit');
-    const breadcrumb_group_info = document.querySelector('#breadcrumb_group_info');
-    const breadcrumb_tasks_info = document.querySelector('#breadcrumb_tasks_info');
+    const breadcrumb_add_to_group = document.querySelectorAll('#breadcrumb_add_to_group');
+    const breadcrumb_course_edit = document.querySelectorAll('#breadcrumb_course_edit');
+    const breadcrumb_group_info = document.querySelectorAll('#breadcrumb_group_info');
+    const breadcrumb_tasks_info = document.querySelectorAll('#breadcrumb_tasks_info');
 
     switch (document.location.pathname)
     {
         case '/users':
             sidebar_users.forEach(e => e.classList.add('active'));
-            breadcrumb_users.removeAttribute('style');
+            breadcrumb_users.forEach(e => e.removeAttribute('style'));
             break;
         case '/groups':
             sidebar_groups.forEach(e => e.classList.add('active'));
-            breadcrumb_groups.removeAttribute('style');
+            breadcrumb_groups.forEach(e => e.removeAttribute('style'));
             break;
         case '/courses':
             sidebar_courses.forEach(e => e.classList.add('active'));
-            breadcrumb_courses.removeAttribute('style');
+            breadcrumb_courses.forEach(e => e.removeAttribute('style'));
             break;
         case '/add_to_group':
             sidebar_add_to_group.forEach(e => e.classList.add('active'));
-            breadcrumb_add_to_group.removeAttribute('style');
+            breadcrumb_add_to_group.forEach(e => e.removeAttribute('style'));
             break;
         case '/course_edit':
             sidebar_course_edit.forEach(e => e.classList.add('active'));
-            breadcrumb_course_edit.removeAttribute('style');
+            breadcrumb_course_edit.forEach(e => e.removeAttribute('style'));
             break;
         case '/group_info':
             sidebar_group_info.forEach(e => e.classList.add('active'));
-            breadcrumb_group_info.removeAttribute('style');
+            breadcrumb_group_info.forEach(e => e.removeAttribute('style'));
             break;
         case '/tasks_info':
             sidebar_tasks_info.forEach(e => e.classList.add('active'));
-            breadcrumb_tasks_info.removeAttribute('style');
+            breadcrumb_tasks_info.forEach(e => e.removeAttribute('style'));
             break;
     }
 });
+
+
+const make_alert = (message, timeout) =>
+{
+    const alert = document.createElement('div');
+    alert.classList.add('alert', 'alert-danger', 'alert-dismissible', 'mb-4');
+    alert.innerText = message;
+
+    const button_close = document.createElement('button');
+    button_close.type = 'button';
+    button_close.classList.add('btn-close');
+    button_close.dataset.bsDismiss = 'alert';
+    alert.append(button_close);
+
+    setTimeout(() => {
+        alert.remove();
+    }, timeout);
+
+    document.querySelector('#alerts').prepend(alert);
+};

@@ -1,32 +1,68 @@
+from typing import Callable, Any
+
 import os
-from uuid import UUID
+import ssl
+import time
+import json
 
-from typing import Callable
-
+import jwt
+import dotenv
 from flask import Flask, Response, make_response, redirect, render_template, request
-from dotenv import load_dotenv
 
-from database import DBHelper
+from database import *
+from database.types import *
+from database.enums import *
+from enums import HTTP, ErrorText
 
 
 
-load_dotenv()
+dotenv.load_dotenv()
 
 app = Flask(__name__, template_folder='web/templates', static_folder='web/static')
+app.secret_key = os.environ['JWT_SECRET']
 app.jinja_env.auto_reload = True
+
+ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+ctx.load_cert_chain(os.environ['TLS_CERT'], os.environ['TLS_KEY'])
 
 database = DBHelper(os.environ['PG_HOST'], int(os.environ['PG_PORT']), os.environ['PG_USER'], os.environ['PG_PASSWD'], os.environ['PG_DB'])
 
 
 # TODO: Декоратор проверки аутентификации
-def Authentication(f: Callable[[UUID], Response]) -> Callable[[], Response]:
+def Authentication(f: Callable[[dict[str, Any]], Response]) -> Callable[[], Response]:
 
     def wrapper() -> Response:
-        return f(None)
+
+        try:
+            raw_token = request.cookies['auth_token']
+        except:
+            return APIError(HTTP.Unauthorized.value, ErrorText.AuthenticationCookieNotFound.value)
+
+        try:
+            token: dict[str, Any] = jwt.decode(raw_token, app.secret_key, algorithms=[jwt.get_unverified_header(raw_token)['alg']])
+        except jwt.InvalidSignatureError:
+            return APIError(HTTP.Unauthorized.value, ErrorText.InvalidTokenSignature.value)
+        except jwt.ExpiredSignatureError:
+            return APIError(HTTP.Unauthorized.value, ErrorText.TokenHasExpired.value)
+        except jwt.DecodeError:
+            return APIError(HTTP.Unauthorized.value, ErrorText.InvalidToken.value)
+
+        return f(token)
 
     wrapper.__name__ = f.__name__
     return wrapper
 
+
+def APIResult(result: dict[str, Any]) -> Response:
+    r = make_response(json.dumps({'ok': True, 'result': result}))
+    r.content_type = 'application/json'
+    return r
+
+
+def APIError(http_code: int, description: str) -> Response:
+    r = make_response(json.dumps({'ok': False, 'description': description}), http_code)
+    r.content_type = 'application/json'
+    return r
 
 
 # Разделы модуля
@@ -34,60 +70,62 @@ def Authentication(f: Callable[[UUID], Response]) -> Callable[[], Response]:
 # TODO: Страница аутентификации
 @app.route('/')
 def index() -> Response:
+
     try:
         login: str = request.args['login']
         password: str = request.args['password']
-    except KeyError as e:
-        return make_response(e)
-    return redirect(users.__name__) # type: ignore
+    except:
+        return make_response('Не указан логин или пароль')
+
+    if not (user := database.auth_user(login, password)):
+        return make_response('Неправильный пароль или такого пользователя не существует')
+
+    r: Response = make_response(redirect(users.__name__))
+    t: int = int(time.time())
+    r.set_cookie('auth_token', jwt.encode({'sub': str(user.id), 'iat': t, 'exp': t+86400}, app.secret_key), domain='project.wg', secure=True, httponly=True)
+
+    return r
 
 
 # Страница "Список пользователей"
 @app.route('/users')
-@Authentication
-def users(user_id: UUID) -> Response:
+def users() -> Response:
     return make_response(render_template('users.html'))
 
 
 # Страница "Список групп"
 @app.route('/groups')
-@Authentication
-def groups(user_id: UUID) -> Response:
+def groups() -> Response:
     return make_response(render_template('groups.html'))
 
 
 # Страница "Список курсов"
 @app.route('/courses')
-@Authentication
-def courses(user_id: UUID) -> Response:
+def courses() -> Response:
     return make_response(render_template('courses.html'))
 
 
 # Страница "Добавление в группу"
 @app.route('/add_to_group')
-@Authentication
-def add_to_group(user_id: UUID) -> Response:
+def add_to_group() -> Response:
     return make_response(render_template('add_to_group.html'))
 
 
 # Страница "Редактирование курса"
 @app.route('/course_edit')
-@Authentication
-def course_edit(user_id: UUID) -> Response:
+def course_edit() -> Response:
     return make_response(render_template('course_edit.html'))
 
 
 # Страница "Информация о группе"
 @app.route('/group_info')
-@Authentication
-def group_info(user_id: UUID) -> Response:
+def group_info() -> Response:
     return make_response(render_template('group_info.html'))
 
 
 # Страница "Информация о заданиях"
 @app.route('/tasks_info')
-@Authentication
-def tasks_info(user_id: UUID) -> Response:
+def tasks_info() -> Response:
     return make_response(render_template('tasks_info.html'))
 
 
@@ -96,20 +134,36 @@ def tasks_info(user_id: UUID) -> Response:
 
 # TODO: Получение списка всех пользователей
 @app.post('/api/get_users')
-def get_users(user_id: UUID) -> Response:
-    return make_response()
-
-
-# TODO: Получение списка всех курсов
-@app.post('/api/get_courses')
-def get_courses(user_id: UUID) -> Response:
-    return make_response()
+@Authentication
+def get_users(token: dict[str, Any]) -> Response:
+    try:
+        users: list[User] = database.get_all_users()
+        return APIResult({'users': [i.as_dict() for i in users]})
+    except:
+        return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
 
 # TODO: Получение списка всех групп
 @app.post('/api/get_groups')
-def get_groups(user_id: UUID) -> Response:
-    return make_response()
+@Authentication
+def get_groups(token: dict[str, Any]) -> Response:
+    try:
+        groups: list[Group] = database.get_all_groups()
+        return APIResult({'groups': [i.as_dict() for i in groups]})
+    except:
+        return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
 
-app.run(host=os.environ['LISTEN_ADDR'], port=int(os.environ['LISTEN_PORT']), debug=True)
+# TODO: Получение списка всех курсов
+@app.post('/api/get_courses')
+@Authentication
+def get_courses(token: dict[str, Any]) -> Response:
+    try:
+        courses: list[Course] = database.get_all_courses()
+        return APIResult({'groups': [i.as_dict() for i in courses]})
+    except:
+        return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
+
+
+
+app.run(host=os.environ['LISTEN_ADDR'], port=int(os.environ['LISTEN_PORT']), ssl_context=ctx, debug=True)

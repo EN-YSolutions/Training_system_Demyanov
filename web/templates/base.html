@@ -15,8 +15,9 @@
 
     <body>
 
-        <div class="navbar border-bottom" style="--bs-breadcrumb-divider: '>';">
-            <ol class="breadcrumb my-1 ms-3" id="header_breadcrumb">
+        <!-- Большой навбар -->
+        <div class="navbar d-none d-lg-block border-bottom px-3 py-3" style="--bs-breadcrumb-divider: '>';">
+            <ol class="breadcrumb m-0 p-0" id="header_breadcrumb">
                 <li class="breadcrumb-item">Образовательный портал</li>
                 <li class="breadcrumb-item">Администрирование</li>
                 <li class="breadcrumb-item" id="breadcrumb_users" style="display: none !important;">Список пользователей</li>
@@ -27,6 +28,17 @@
                 <li class="breadcrumb-item" id="breadcrumb_group_info" style="display: none !important;">Информация о группе</li>
                 <li class="breadcrumb-item" id="breadcrumb_tasks_info" style="display: none !important;">Информация о заданиях</li>
             </ol>
+        </div>
+
+        <!-- Маленький навбар -->
+        <div class="navbar d-block d-lg-none border-bottom px-2">
+            <span id="breadcrumb_users" style="display: none !important;">Список пользователей</span>
+            <span id="breadcrumb_groups" style="display: none !important;">Список групп</span>
+            <span id="breadcrumb_courses" style="display: none !important;">Список курсов</span>
+            <span id="breadcrumb_add_to_group" style="display: none !important;">Добавление в группу</span>
+            <span id="breadcrumb_course_edit" style="display: none !important;">Редактирование курса</span>
+            <span id="breadcrumb_group_info" style="display: none !important;">Информация о группе</span>
+            <span id="breadcrumb_tasks_info" style="display: none !important;">Информация о заданиях</span>
         </div>
 
         <div class="row g-0">
@@ -45,7 +57,7 @@
                     <a href="/tasks_info" class="nav-link rounded-0 mb-1" id="sidebar_tasks_info">Информация о заданиях</a>
                 </div>
                 <div class="nav nav-pills vstack gap-1">
-                    <a href="http://nerotu.project.wg/" class="nav-link mt-1 mb-1">Перейти в чат</a>
+                    <a href="http://nerotu.project.wg/" class="nav-link rounded-0 mt-1 mb-1">Перейти в чат</a>
                 </div>
             </div>
 
@@ -63,14 +75,14 @@
                     <a href="/tasks_info" class="nav-link rounded-0 d-flex align-items-center mb-1" id="sidebar_tasks_info"><span class="material-symbols-outlined">patient_list</span></a>
                 </div>
                 <div class="nav nav-pills vstack gap-1">
-                    <a href="http://nerotu.project.wg/" class="nav-link mt-1 mb-1"><span class="material-symbols-outlined">forum</span></a>
+                    <a href="http://nerotu.project.wg/" class="nav-link rounded-0 d-flex align-items-center mt-1 mb-1"><span class="material-symbols-outlined">forum</span></a>
                 </div>
             </div>
 
             <!-- Основное содержимое страницы -->
             <div class="col">
-                <div id="alerts"></div>
                 <div class="container">
+                    <div class="mt-3" id="alerts"></div>
                     {% block content %}{% endblock %}
                 </div>
             </div>

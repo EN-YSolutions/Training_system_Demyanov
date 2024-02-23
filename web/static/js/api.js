@@ -14,8 +14,7 @@ const make_request = (method, args) => new Promise((resolve, reject) =>
             response.json()
                 .then(json_response =>
                 {
-                    if (!json_response.ok)
-                    {
+                    if (!json_response.ok) {
                         reject({http: true, api: true, description: json_response.description});
                         return;
                     }
