@@ -4,6 +4,7 @@ import os
 import ssl
 import time
 import json
+from uuid import UUID
 
 import jwt
 import dotenv
@@ -132,7 +133,7 @@ def tasks_info() -> Response:
 
 # API методы
 
-# TODO: Получение списка всех пользователей
+# Получение списка всех пользователей
 @app.post('/api/get_users')
 @Authentication
 def get_users(token: dict[str, Any]) -> Response:
@@ -143,13 +144,53 @@ def get_users(token: dict[str, Any]) -> Response:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
 
-# TODO: Получение списка всех групп
+# Получение пользователя по ID
+@app.post('/api/get_user')
+@Authentication
+def get_user(token: dict[str, Any]) -> Response:
+
+    try:
+        user_id: UUID = UUID(request.form['user_id'])
+    except:
+        return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
+
+    try:
+        user: User | None = database.get_user(user_id)
+        if user:
+            return APIResult({'user': user.as_dict()})
+        else:
+            return APIError(HTTP.NotFound.value, ErrorText.UserNotFound.value)
+    except:
+        return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
+
+
+# Получение списка всех групп
 @app.post('/api/get_groups')
 @Authentication
 def get_groups(token: dict[str, Any]) -> Response:
     try:
         groups: list[Group] = database.get_all_groups()
-        return APIResult({'groups': [i.as_dict() for i in groups]})
+        return APIResult({'groups': [i.as_dict(database) for i in groups]})
+    except:
+        return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
+
+
+# Получение группы по ID
+@app.post('/api/get_group')
+@Authentication
+def get_group(token: dict[str, Any]) -> Response:
+
+    try:
+        group_id: str = request.form['group_id']
+    except:
+        return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
+
+    try:
+        group: Group | None = database.get_group(UUID(group_id))
+        if group:
+            return APIResult({'group': group.as_dict(database)})
+        else:
+            return APIError(HTTP.NotFound.value, ErrorText.GroupNotFound.value)
     except:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
@@ -160,7 +201,7 @@ def get_groups(token: dict[str, Any]) -> Response:
 def get_courses(token: dict[str, Any]) -> Response:
     try:
         courses: list[Course] = database.get_all_courses()
-        return APIResult({'groups': [i.as_dict() for i in courses]})
+        return APIResult({'courses': [i.as_dict(database) for i in courses]})
     except:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 

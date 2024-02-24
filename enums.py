@@ -14,15 +14,18 @@ class HTTP(_Enum):
 
 
 class ErrorText(_Enum):
-    NotImplementedYet = 'not implemented yet'
+    InternalServerError = 'internal server error'
     InvalidRequestFormat = 'invalid request format'
+    NotImplementedYet = 'not implemented yet'
+
+    NotEnoughArguments = 'not enough arguments'
+    InvalidArgumentValue = 'invalid argument value'
 
     AuthenticationCookieNotFound = 'authentication cookie not found'
     InvalidTokenSignature = 'invalid token signature'
     TokenHasExpired = 'token has expired'
     InvalidToken = 'invalid token'
 
-    InternalServerError = 'internal server error'
-
-    NotEnoughArguments = 'not enough arguments'
-    InvalidArgumentValue = 'invalid argument value'
+    UserNotFound = 'user not found'
+    GroupNotFound = 'group not found'
+    CourseNotFound = 'course not found'

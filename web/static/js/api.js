@@ -5,10 +5,7 @@ const API_GET_COURSES = 'get_courses';
 
 const make_request = (method, args) => new Promise((resolve, reject) =>
 {
-    const headers = new Headers();
-    headers.set('Content-Type', 'multipart/form-data');
-
-    fetch(`/api/${method}`, {method: 'POST', headers: headers, body: args})
+    fetch(`/api/${method}`, {method: 'POST', body: args})
         .then(response =>
         {
             response.json()

@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () =>
     const empty_warn = document.querySelector('#empty_warn');
     const list = document.querySelector('#list');
 
-    make_request(API_GET_USERS)
+    make_request(API_GET_GROUPS)
         .then(result =>
         {
             if (result.length == 0) {
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () =>
                 return;
             }
 
-            result.users.forEach(e => {
+            result.groups.forEach(e => {
                 list.append(make_list_item(e));
             });
         })
@@ -33,19 +33,16 @@ const make_list_item = (e) =>
 
     const card_header = document.createElement('div');
     card_header.classList.add('card-header');
-    card_header.innerText = e.name;
+    card_header.innerText = e.title;
 
 
     const card_body = document.createElement('div');
     card_body.classList.add('card-body');
-    card_body.innerHTML = `Логин: ${e.login}`;
-    card_body.innerHTML += `<br>Роль: ${e.role == 'student'? 'студент' : e.role == 'teacher'? 'преподаватель' : e.role == 'curator'? 'куратор' : e.role == 'admin'? 'администратор' : 'неизвестно'}`;
-    if (e.balance)
-        card_body.innerHTML += `<br>Баланс: ${e.balance}`;
-    if (e.scoring_system)
-        card_body.innerHTML += `<br>Система оценивания: ${e.scoring_system}`;
-    card_body.innerHTML += `<br>ID: ${e.id}`;
 
+    card_body.innerHTML = `Курс: <a href="/course?id=${e.course.id}">${e.course.title}</a>`;
+    card_body.innerHTML += `<br>Куратор: <a href="/user?id=${e.curator.id}">${e.curator.name}</a>`;
+    card_body.innerHTML += `<br>Студентов: ${e.members.length}`;
+    card_body.innerHTML += `<br>ID: ${e.id}`;
 
     const card_footer = document.createElement('div');
     card_footer.classList.add('card-footer');
@@ -54,7 +51,7 @@ const make_list_item = (e) =>
     button.classList.add('btn', 'btn-outline-primary');
     button.innerText = 'Выбрать';
     button.addEventListener('click', () => {
-        sessionStorage.setItem('selected_user_id', e.id);
+        sessionStorage.setItem('selected_group_id', e.id);
     });
     card_footer.append(button);
 
