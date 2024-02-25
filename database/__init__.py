@@ -51,7 +51,6 @@ class DBHelper:
                 SELECT *
                 FROM {DBHelper.__TABLE_USERS}
                 WHERE "login" = %s
-                LIMIT 1
             ''', (login, ))
             passworded_user: _types.UserPassworded | None = _types.UserPassworded.parse(result) if (result := cursor.fetchone()) else None
 

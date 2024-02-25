@@ -29,7 +29,7 @@ ctx.load_cert_chain(os.environ['TLS_CERT'], os.environ['TLS_KEY'])
 database = DBHelper(os.environ['PG_HOST'], int(os.environ['PG_PORT']), os.environ['PG_USER'], os.environ['PG_PASSWD'], os.environ['PG_DB'])
 
 
-# TODO: Декоратор проверки аутентификации
+# Декоратор проверки аутентификации
 def Authentication(f: Callable[[dict[str, Any]], Response]) -> Callable[[], Response]:
 
     def wrapper() -> Response:
@@ -181,12 +181,12 @@ def get_groups(token: dict[str, Any]) -> Response:
 def get_group(token: dict[str, Any]) -> Response:
 
     try:
-        group_id: str = request.form['group_id']
+        group_id: UUID = UUID(request.form['group_id'])
     except:
         return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
 
     try:
-        group: Group | None = database.get_group(UUID(group_id))
+        group: Group | None = database.get_group(group_id)
         if group:
             return APIResult({'group': group.as_dict(database)})
         else:
@@ -195,7 +195,7 @@ def get_group(token: dict[str, Any]) -> Response:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
 
-# TODO: Получение списка всех курсов
+# Получение списка всех курсов
 @app.post('/api/get_courses')
 @Authentication
 def get_courses(token: dict[str, Any]) -> Response:
@@ -205,6 +205,25 @@ def get_courses(token: dict[str, Any]) -> Response:
     except:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
+
+# Получение курса по ID
+@app.post('/api/get_course')
+@Authentication
+def get_course(token: dict[str, Any]) -> Response:
+
+    try:
+        course_id: UUID = UUID(request.form['course_id'])
+    except:
+        return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
+
+    try:
+        course: Course | None = database.get_course(course_id)
+        if course:
+            return APIResult({'course': course.as_dict(database)})
+        else:
+            return APIError(HTTP.NotFound.value, ErrorText.CourseNotFound.value)
+    except:
+        return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
 
 app.run(host=os.environ['LISTEN_ADDR'], port=int(os.environ['LISTEN_PORT']), ssl_context=ctx, debug=True)

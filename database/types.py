@@ -63,9 +63,9 @@ class Group:
     def as_dict(self, database: _database.DBHelper) -> dict[str, _typing.Any]:
         return {
             'id': str(self.id),
-            'course_id': str(self.course_id),
+            # 'course_id': str(self.course_id),
             'course': i.as_dict(database) if (i := database.get_course(self.course_id)) else None,
-            'curator_id': str(self.curator_id),
+            # 'curator_id': str(self.curator_id),
             'curator': i.as_dict() if (i := database.get_user(self.curator_id)) else None,
             'title': self.title,
             'members': [i.as_dict() for i in database.get_group_members(self.id)]
@@ -88,7 +88,7 @@ class Course:
     def as_dict(self, database: _database.DBHelper) -> dict[str, _typing.Any]:
         return {
             'id': str(self.id),
-            'author_id': str(self.author_id),
+            # 'author_id': str(self.author_id),
             'author': i.as_dict() if (i := database.get_user(self.author_id)) else None,
             'price': self.price,
             'title': self.title,
@@ -121,9 +121,9 @@ class Lesson:
     def as_dict(self, database: _database.DBHelper) -> dict[str, _typing.Any]:
         return {
             'id': str(self.id),
-            'course_id': str(self.course_id),
+            # 'course_id': str(self.course_id),
             'course': i.as_dict(database) if (i := database.get_course(self.course_id)) else None,
-            'teacher_id': str(self.teacher_id),
+            # 'teacher_id': str(self.teacher_id),
             'teacher': i.as_dict() if (i := database.get_user(self.teacher_id)) else None,
             'title': self.title,
             'text': self.text,

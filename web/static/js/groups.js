@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () =>
     make_request(API_GET_GROUPS)
         .then(result =>
         {
-            if (result.length == 0) {
+            if (result.groups.length == 0) {
                 empty_warn.removeAttribute('style');
                 return;
             }
@@ -43,6 +43,7 @@ const make_list_item = (e) =>
     card_body.innerHTML += `<br>Куратор: <a href="/user?id=${e.curator.id}">${e.curator.name}</a>`;
     card_body.innerHTML += `<br>Студентов: ${e.members.length}`;
     card_body.innerHTML += `<br>ID: ${e.id}`;
+
 
     const card_footer = document.createElement('div');
     card_footer.classList.add('card-footer');
