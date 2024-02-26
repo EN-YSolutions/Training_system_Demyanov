@@ -8,7 +8,7 @@ from uuid import UUID
 
 import jwt
 import dotenv
-from flask import Flask, Response, make_response, redirect, render_template, request
+from flask import Flask, Response, abort, make_response, redirect, render_template, request
 
 from database import *
 from database.types import *
@@ -80,6 +80,9 @@ def index() -> Response:
 
     if not (user := database.auth_user(login, password)):
         return make_response('Неправильный пароль или такого пользователя не существует')
+
+    if user.role != UserRole.Admin:
+        return make_response('Доступ разрешён только администратору')
 
     r: Response = make_response(redirect(users.__name__))
     t: int = int(time.time())
