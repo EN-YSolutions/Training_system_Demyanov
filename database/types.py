@@ -60,16 +60,22 @@ class Group:
     def parse(row: tuple) -> _types.Group:
         return _types.Group(row[0], row[1], row[2], row[3])
 
-    def as_dict(self, database: _database.DBHelper) -> dict[str, _typing.Any]:
-        return {
-            'id': str(self.id),
-            # 'course_id': str(self.course_id),
-            'course': i.as_dict(database) if (i := database.get_course(self.course_id)) else None,
-            # 'curator_id': str(self.curator_id),
-            'curator': i.as_dict() if (i := database.get_user(self.curator_id)) else None,
-            'title': self.title,
-            'members': [i.as_dict() for i in database.get_group_members(self.id)]
-        }
+    def as_dict(self, database: _database.DBHelper | None = None, depth: int = 0) -> dict[str, _typing.Any]:
+        if depth == 0 or not database:
+            return {
+                'id': str(self.id),
+                'course_id': str(self.course_id),
+                'curator_id': str(self.curator_id),
+                'title': self.title,
+            }
+        else:
+            depth -= 1
+            return {
+                'id': str(self.id),
+                'course': i.as_dict(database, depth) if (i := database.get_course(self.course_id)) else None,
+                'curator': i.as_dict() if (i := database.get_user(self.curator_id)) else None,
+                'title': self.title,
+            }
 
 
 @_dataclasses.dataclass
@@ -85,15 +91,24 @@ class Course:
     def parse(row: tuple) -> _types.Course:
         return _types.Course(row[0], row[1], float(row[2][2:]), row[3], row[4])
 
-    def as_dict(self, database: _database.DBHelper) -> dict[str, _typing.Any]:
-        return {
-            'id': str(self.id),
-            # 'author_id': str(self.author_id),
-            'author': i.as_dict() if (i := database.get_user(self.author_id)) else None,
-            'price': self.price,
-            'title': self.title,
-            'description': self.description,
-        }
+    def as_dict(self, database: _database.DBHelper | None = None, depth: int = 0) -> dict[str, _typing.Any]:
+        if depth == 0 or not database:
+            return {
+                'id': str(self.id),
+                'author_id': str(self.author_id),
+                'price': self.price,
+                'title': self.title,
+                'description': self.description,
+            }
+        else:
+            depth -= 1
+            return {
+                'id': str(self.id),
+                'author': i.as_dict() if (i := database.get_user(self.author_id)) else None,
+                'price': self.price,
+                'title': self.title,
+                'description': self.description,
+            }
 
 
 @_dataclasses.dataclass
@@ -102,11 +117,18 @@ class GroupMember:
     group_id: _uuid.UUID
     student_id: _uuid.UUID
 
-    def as_dict(self) -> dict[str, _typing.Any]:
-        return {
-            'group_id': str(self.group_id),
-            'student_id': str(self.student_id),
-        }
+    def as_dict(self, database: _database.DBHelper | None = None, depth: int = 0) -> dict[str, _typing.Any]:
+        if depth == 0 or not database:
+            return {
+                'group_id': str(self.group_id),
+                'student_id': str(self.student_id),
+            }
+        else:
+            depth -= 1
+            return {
+                'group': i.as_dict(database, depth) if (i := database.get_group(self.group_id)) else None,
+                'student': i.as_dict() if (i := database.get_user(self.student_id)) else None,
+            }
 
 
 @_dataclasses.dataclass
@@ -118,16 +140,24 @@ class Lesson:
     title: str
     text: str | None
 
-    def as_dict(self, database: _database.DBHelper) -> dict[str, _typing.Any]:
-        return {
-            'id': str(self.id),
-            # 'course_id': str(self.course_id),
-            'course': i.as_dict(database) if (i := database.get_course(self.course_id)) else None,
-            # 'teacher_id': str(self.teacher_id),
-            'teacher': i.as_dict() if (i := database.get_user(self.teacher_id)) else None,
-            'title': self.title,
-            'text': self.text,
-        }
+    def as_dict(self, database: _database.DBHelper | None = None, depth: int = 0) -> dict[str, _typing.Any]:
+        if depth == 0 or not database:
+            return {
+                'id': str(self.id),
+                'course_id': str(self.course_id),
+                'teacher_id': str(self.teacher_id),
+                'title': self.title,
+                'text': self.text,
+            }
+        else:
+            depth -= 1
+            return {
+                'id': str(self.id),
+                'course': i.as_dict(database, depth) if (i := database.get_course(self.course_id)) else None,
+                'teacher': i.as_dict() if (i := database.get_user(self.teacher_id)) else None,
+                'title': self.title,
+                'text': self.text,
+            }
 
 
 @_dataclasses.dataclass
@@ -138,13 +168,17 @@ class Task:
     title: str
     description: str | None
 
-    def as_dict(self) -> dict[str, _typing.Any]:
-        return {
-            'id': str(self.id),
-            'lesson_id': str(self.lesson_id),
-            'title': self.title,
-            'description': self.description,
-        }
+    def as_dict(self, database: _database.DBHelper | None = None, depth: int = 0) -> dict[str, _typing.Any]:
+        # TODO
+        if depth == 0 or not database or True:
+            return {
+                'id': str(self.id),
+                'lesson_id': str(self.lesson_id),
+                'title': self.title,
+                'description': self.description,
+            }
+        else:
+            depth -= 1
 
 
 @_dataclasses.dataclass
@@ -157,15 +191,19 @@ class HomeTask:
     text: str | None
     status: _enums.TaskStatus
 
-    def as_dict(self) -> dict[str, _typing.Any]:
-        return {
-            'id': str(self.id),
-            'task_id': str(self.task_id),
-            'student_id': str(self.student_id),
-            'title': self.title,
-            'text': self.text,
-            'status': self.status.value,
-        }
+    def as_dict(self, database: _database.DBHelper | None = None, depth: int = 0) -> dict[str, _typing.Any]:
+        # TODO
+        if depth == 0 or not database or True:
+            return {
+                'id': str(self.id),
+                'task_id': str(self.task_id),
+                'student_id': str(self.student_id),
+                'title': self.title,
+                'text': self.text,
+                'status': self.status.value,
+            }
+        else:
+            depth -= 1
 
 
 @_dataclasses.dataclass
@@ -175,9 +213,13 @@ class Deadline:
     lesson_id: _uuid.UUID
     deadline: str      # TODO: проверить возвращаемый тип
 
-    def as_dict(self) -> dict[str, _typing.Any]:
-        return {
-            'group_id': str(self.group_id),
-            'lesson_id': str(self.lesson_id),
-            'deadline': self.deadline,
-        }
+    def as_dict(self, database: _database.DBHelper | None = None, depth: int = 0) -> dict[str, _typing.Any]:
+        # TODO
+        if depth == 0 or not database or True:
+            return {
+                'group_id': str(self.group_id),
+                'lesson_id': str(self.lesson_id),
+                'deadline': self.deadline,
+            }
+        else:
+            depth -= 1

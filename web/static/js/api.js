@@ -1,9 +1,16 @@
-const API_GET_USERS = 'get_users';
-const API_GET_GROUPS = 'get_groups';
-const API_GET_COURSES = 'get_courses';
+export const LOGIN = 'login';
+
+export const GET_USERS = 'get_users';
+export const GET_USER = 'get_user';
+
+export const GET_GROUPS = 'get_groups';
+export const GET_GROUP = 'get_group';
+
+export const GET_COURSES = 'get_courses';
+export const GET_COURSE = 'get_course';
 
 
-const make_request = (method, args) => new Promise((resolve, reject) =>
+export const make_request = (method, args) => new Promise((resolve, reject) =>
 {
     fetch(`/api/${method}`, {method: 'POST', body: args})
         .then(response =>

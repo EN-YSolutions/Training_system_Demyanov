@@ -7,6 +7,7 @@ class HTTP(_Enum):
 
     BadRequest = 400
     Unauthorized = 401
+    Forbidden = 403
     NotFound = 404
 
     InternalServerError = 500
@@ -25,6 +26,8 @@ class ErrorText(_Enum):
     InvalidTokenSignature = 'invalid token signature'
     TokenHasExpired = 'token has expired'
     InvalidToken = 'invalid token'
+
+    AccessDenied = 'access denied'
 
     UserNotFound = 'user not found'
     GroupNotFound = 'group not found'

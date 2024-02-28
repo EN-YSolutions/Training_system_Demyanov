@@ -119,6 +119,16 @@ class DBHelper:
         return result
 
 
+    def get_group_members_amount(self, group_id) -> int:
+        with self.__database.cursor() as cursor:
+            cursor.execute(f'''
+                SELECT COUNT("student_id")
+                FROM {DBHelper.__TABLE_GROUPS_MEMBERS}
+                WHERE "group_id" = %s
+            ''', (group_id, ))
+            return int(result[0]) if (result := cursor.fetchone()) else 0
+
+
     def get_all_courses(self) -> list[_types.Course]:
         with self.__database.cursor() as cursor:
             cursor.execute(f'''

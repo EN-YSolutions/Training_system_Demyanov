@@ -13,6 +13,14 @@ document.addEventListener('DOMContentLoaded', () =>
         });
     }
 
+
+    document.querySelectorAll('#logout').forEach(e =>
+    {
+        e.addEventListener('click', () => {
+
+        });
+    });
+
     const sidebar_users = document.querySelectorAll('#sidebar_users');
     const sidebar_groups = document.querySelectorAll('#sidebar_groups');
     const sidebar_courses = document.querySelectorAll('#sidebar_courses');
@@ -34,14 +42,17 @@ document.addEventListener('DOMContentLoaded', () =>
     switch (document.location.pathname)
     {
         case '/users':
+        case '/user':
             sidebar_users.forEach(e => e.classList.add('active'));
             breadcrumb_users.forEach(e => e.removeAttribute('style'));
             break;
         case '/groups':
+        case '/group':
             sidebar_groups.forEach(e => e.classList.add('active'));
             breadcrumb_groups.forEach(e => e.removeAttribute('style'));
             break;
         case '/courses':
+        case '/course':
             sidebar_courses.forEach(e => e.classList.add('active'));
             breadcrumb_courses.forEach(e => e.removeAttribute('style'));
             break;
@@ -63,23 +74,3 @@ document.addEventListener('DOMContentLoaded', () =>
             break;
     }
 });
-
-
-const make_alert = (message, timeout) =>
-{
-    const alert = document.createElement('div');
-    alert.classList.add('alert', 'alert-danger', 'alert-dismissible', 'mb-4');
-    alert.innerText = message;
-
-    const button_close = document.createElement('button');
-    button_close.type = 'button';
-    button_close.classList.add('btn-close');
-    button_close.dataset.bsDismiss = 'alert';
-    alert.append(button_close);
-
-    setTimeout(() => {
-        alert.remove();
-    }, timeout);
-
-    document.querySelector('#alerts').prepend(alert);
-};

@@ -8,7 +8,7 @@ from uuid import UUID
 
 import jwt
 import dotenv
-from flask import Flask, Response, abort, make_response, redirect, render_template, request
+from flask import Flask, Response, make_response, redirect, url_for, render_template, request
 
 from database import *
 from database.types import *
@@ -66,75 +66,114 @@ def APIError(http_code: int, description: str) -> Response:
     return r
 
 
-# Разделы модуля
 
-# TODO: Страница аутентификации
-@app.route('/')
+# Страница аутентификации
+@app.get('/')
 def index() -> Response:
 
-    try:
-        login: str = request.args['login']
-        password: str = request.args['password']
-    except:
-        return make_response('Не указан логин или пароль')
+    if 'auth_token' in request.cookies:
+        return make_response(redirect(url_for(users.__name__)))
 
-    if not (user := database.auth_user(login, password)):
-        return make_response('Неправильный пароль или такого пользователя не существует')
+    return make_response(render_template('index.html'))
 
-    if user.role != UserRole.Admin:
-        return make_response('Доступ разрешён только администратору')
 
-    r: Response = make_response(redirect(users.__name__))
-    t: int = int(time.time())
-    r.set_cookie('auth_token', jwt.encode({'sub': str(user.id), 'iat': t, 'exp': t+86400}, app.secret_key), domain='project.wg', secure=True, httponly=True)
-
+# Выход из аккаунта (кука httpOnly не доступна в JS на стороне клиента, нужно удалять на стороне сервера)
+@app.get('/logout')
+def logout() -> Response:
+    r: Response = make_response(redirect(url_for(index.__name__)))
+    r.set_cookie('auth_token', '', expires=0, domain='project.wg', secure=True, httponly=True)
     return r
 
 
+
 # Страница "Список пользователей"
-@app.route('/users')
+@app.get('/users')
 def users() -> Response:
     return make_response(render_template('users.html'))
 
 
+# Страница с информацией о конкретном пользователе
+@app.get('/user')
+def user() -> Response:
+    return make_response(render_template('user.html'))
+
+
+
 # Страница "Список групп"
-@app.route('/groups')
+@app.get('/groups')
 def groups() -> Response:
     return make_response(render_template('groups.html'))
 
 
+# Страница с информацией о конкретной группе
+@app.get('/group')
+def group() -> Response:
+    return make_response(render_template('group.html'))
+
+
+
 # Страница "Список курсов"
-@app.route('/courses')
+@app.get('/courses')
 def courses() -> Response:
     return make_response(render_template('courses.html'))
 
 
+# Страница с информацией о конкретном курсе
+@app.get('/course')
+def course() -> Response:
+    return make_response(render_template('course.html'))
+
+
+
 # Страница "Добавление в группу"
-@app.route('/add_to_group')
+@app.get('/add_to_group')
 def add_to_group() -> Response:
     return make_response(render_template('add_to_group.html'))
 
 
 # Страница "Редактирование курса"
-@app.route('/course_edit')
+@app.get('/course_edit')
 def course_edit() -> Response:
     return make_response(render_template('course_edit.html'))
 
 
 # Страница "Информация о группе"
-@app.route('/group_info')
+@app.get('/group_info')
 def group_info() -> Response:
     return make_response(render_template('group_info.html'))
 
 
 # Страница "Информация о заданиях"
-@app.route('/tasks_info')
+@app.get('/tasks_info')
 def tasks_info() -> Response:
     return make_response(render_template('tasks_info.html'))
 
 
 
 # API методы
+
+# Аутентификация
+@app.post('/api/login')
+def login() -> Response:
+
+    try:
+        login: str = request.form['login']
+        password: str = request.form['password']
+    except:
+        return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
+
+    if not (user := database.auth_user(login, password)):
+        return APIError(HTTP.NotFound.value, ErrorText.UserNotFound.value)
+
+    if user.role != UserRole.Admin:
+        return APIError(HTTP.Forbidden.value, ErrorText.AccessDenied.value)
+
+    t: int = int(time.time())
+    r: Response = make_response(APIResult({}))
+    r.set_cookie('auth_token', jwt.encode({'sub': str(user.id), 'iat': t, 'exp': t+86400}, app.secret_key), domain='project.wg', secure=True, httponly=True)
+
+    return r
+
 
 # Получение списка всех пользователей
 @app.post('/api/get_users')
@@ -153,7 +192,7 @@ def get_users(token: dict[str, Any]) -> Response:
 def get_user(token: dict[str, Any]) -> Response:
 
     try:
-        user_id: UUID = UUID(request.form['user_id'])
+        user_id: UUID = UUID(request.form['id'])
     except:
         return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
 
@@ -171,9 +210,15 @@ def get_user(token: dict[str, Any]) -> Response:
 @app.post('/api/get_groups')
 @Authentication
 def get_groups(token: dict[str, Any]) -> Response:
+
+    try:
+        depth: int = int(request.form['depth'])
+    except:
+        return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
+
     try:
         groups: list[Group] = database.get_all_groups()
-        return APIResult({'groups': [i.as_dict(database) for i in groups]})
+        return APIResult({'entries': [{'group': i.as_dict(database, depth), 'members': database.get_group_members_amount(i.id)} for i in groups]})
     except:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
@@ -184,14 +229,15 @@ def get_groups(token: dict[str, Any]) -> Response:
 def get_group(token: dict[str, Any]) -> Response:
 
     try:
-        group_id: UUID = UUID(request.form['group_id'])
+        group_id: UUID = UUID(request.form['id'])
+        depth: int = int(request.form['depth'])
     except:
         return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
 
     try:
         group: Group | None = database.get_group(group_id)
         if group:
-            return APIResult({'group': group.as_dict(database)})
+            return APIResult({'group': group.as_dict(database, depth)})
         else:
             return APIError(HTTP.NotFound.value, ErrorText.GroupNotFound.value)
     except:
@@ -202,9 +248,15 @@ def get_group(token: dict[str, Any]) -> Response:
 @app.post('/api/get_courses')
 @Authentication
 def get_courses(token: dict[str, Any]) -> Response:
+
+    try:
+        depth: int = int(request.form['depth'])
+    except:
+        return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
+
     try:
         courses: list[Course] = database.get_all_courses()
-        return APIResult({'courses': [i.as_dict(database) for i in courses]})
+        return APIResult({'courses': [i.as_dict(database, depth) for i in courses]})
     except:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
@@ -215,14 +267,15 @@ def get_courses(token: dict[str, Any]) -> Response:
 def get_course(token: dict[str, Any]) -> Response:
 
     try:
-        course_id: UUID = UUID(request.form['course_id'])
+        course_id: UUID = UUID(request.form['id'])
+        depth: int = int(request.form['depth'])
     except:
         return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
 
     try:
         course: Course | None = database.get_course(course_id)
         if course:
-            return APIResult({'course': course.as_dict(database)})
+            return APIResult({'course': course.as_dict(database, depth)})
         else:
             return APIError(HTTP.NotFound.value, ErrorText.CourseNotFound.value)
     except:

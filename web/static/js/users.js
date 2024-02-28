@@ -1,10 +1,14 @@
+import * as api from './api.js';
+import * as alert from './alert.js';
+
+
 document.addEventListener('DOMContentLoaded', () =>
 {
     const spinner = document.querySelector('#spinner');
     const empty_warn = document.querySelector('#empty_warn');
     const list = document.querySelector('#list');
 
-    make_request(API_GET_USERS)
+    api.make_request(api.GET_USERS)
         .then(result =>
         {
             if (result.users.length == 0) {
@@ -17,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () =>
             });
         })
         .catch(error => {
-            make_alert(error.api? `Ошибка API: ${error.description}` : `Ошибка HTTP: ${error.code} ${error.text}`, 10000);
+            alert.show(error.api? `Ошибка API: ${error.description}` : error.http? `Ошибка HTTP: ${error.code} ${error.text}` : 'Неизвестная ошибка', 10000);
         })
         .finally(() => {
             spinner.setAttribute('style', 'display: none !important;');
@@ -33,7 +37,7 @@ const make_list_item = (e) =>
 
     const card_header = document.createElement('div');
     card_header.classList.add('card-header');
-    card_header.innerText = e.name;
+    card_header.innerHTML = `<a href="/user?id=${e.id}">${e.name}</a>`;
 
 
     const card_body = document.createElement('div');
