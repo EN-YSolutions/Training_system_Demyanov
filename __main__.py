@@ -55,7 +55,7 @@ def Authentication(f: Callable[[dict[str, Any]], Response]) -> Callable[[], Resp
 
 
 def APIResult(result: dict[str, Any]) -> Response:
-    r = make_response(json.dumps({'ok': True, 'result': result}))
+    r = make_response(json.dumps({'ok': True, 'result': result}, indent=2))
     r.content_type = 'application/json'
     return r
 
@@ -150,7 +150,9 @@ def tasks_info() -> Response:
 
 
 
-# API методы
+
+
+# -------------------------------------------------- Аутентификация --------------------------------------------------
 
 # Аутентификация
 @app.post('/api/login')
@@ -174,6 +176,11 @@ def login() -> Response:
 
     return r
 
+
+
+
+
+# -------------------------------------------------- Пользователи --------------------------------------------------
 
 # Получение списка всех пользователей
 @app.post('/api/get_users')
@@ -205,6 +212,47 @@ def get_user(token: dict[str, Any]) -> Response:
     except:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
+
+# Получение списка групп, в которых состоит пользователь
+@app.post('/api/get_user_groups')
+@Authentication
+def get_user_groups(token: dict[str, Any]) -> Response:
+
+    try:
+        user_id: UUID = UUID(request.form['id'])
+        depth: int = int(request.form['depth'])
+    except:
+        return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
+
+    try:
+        groups: list[Group] = database.get_user_groups(user_id)
+        return APIResult({'groups': [i.as_dict(database, depth) for i in groups]})
+    except:
+        return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
+
+
+# Удаление пользователя из группы
+@app.post('/api/delete_user_group')
+@Authentication
+def delete_user_group(token: dict[str, Any]) -> Response:
+
+    try:
+        user_id: UUID = UUID(request.form['user_id'])
+        group_id: UUID = UUID(request.form['group_id'])
+    except:
+        return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
+
+    try:
+        database.delete_user_group(user_id, group_id)
+        return APIResult({})
+    except:
+        return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
+
+
+
+
+
+# -------------------------------------------------- Группы --------------------------------------------------
 
 # Получение списка всех групп
 @app.post('/api/get_groups')
@@ -244,6 +292,27 @@ def get_group(token: dict[str, Any]) -> Response:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
 
+@app.post('/api/get_group_members')
+@Authentication
+def get_group_members(token: dict[str, Any]) -> Response:
+
+    try:
+        group_id: UUID = UUID(request.form['id'])
+    except:
+        return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
+
+    try:
+        users: list[User] = database.get_group_members(group_id)
+        return APIResult({'users': [i.as_dict() for i in users]})
+    except:
+        return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
+
+
+
+
+
+# -------------------------------------------------- Курсы --------------------------------------------------
+
 # Получение списка всех курсов
 @app.post('/api/get_courses')
 @Authentication
@@ -280,6 +349,9 @@ def get_course(token: dict[str, Any]) -> Response:
             return APIError(HTTP.NotFound.value, ErrorText.CourseNotFound.value)
     except:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
+
+
+
 
 
 app.run(host=os.environ['LISTEN_ADDR'], port=int(os.environ['LISTEN_PORT']), ssl_context=ctx, debug=True)

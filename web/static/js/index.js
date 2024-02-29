@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () =>
 
         const data = new FormData(event.target);
         api.make_request(api.LOGIN, data)
-        .then(response => {
+        .then(result => {
             window.location.replace('/users');
         })
         .catch(error => {

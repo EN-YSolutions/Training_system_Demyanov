@@ -12,25 +12,37 @@
 </div>
 
 
-<div id="user" style="display: none !important;">
-
-    <div class="card">
-        <div class="card-header">
-            <span id="user_name"></span>
-        </div>
-        <div class="card-body">
-            Логин: <span id="user_login"></span><br>
-            Роль: <span id="user_role"></span><br>
-            <span>Баланс: <span id="user_balance"></span><br></span>
-            <span>Система оценивания: <span id="user_scoring_system"></span><br></span>
-            ID: <span id="user_id"></span>
-        </div>
-        <div class="card-footer">
-            ???
-        </div>
+<div class="card my-3" id="user" style="display: none !important;">
+    <div class="card-header" id="user_name"></div>
+    <div class="card-body">
+        Логин: <span id="user_login"></span><br>
+        Роль: <span id="user_role"></span><br>
+        <span>Баланс: <span id="user_balance"></span><br></span>
+        <span>Система оценивания: <span id="user_scoring_system"></span><br></span>
+        ID: <span id="user_id"></span>
     </div>
-
 </div>
 
+<div class="card my-3" id="user_groups" style="display: none !important;">
+    <div class="card-header">
+        Группы
+    </div>
+    <div class="card-body">
 
+        <span id="user_groups_empty" style="display: none !important;">Пользователь не состоит ни в одной группе</span>
+
+        <table class="table table-hover" id="user_groups_table" style="display: none !important;">
+            <thead>
+                <tr>
+                    <th scope="col" class="col-5">Группа</th>
+                    <th scope="col" class="col-5">Курс</th>
+                    <th scope="col" class="col-2">Удаление из группы</th>
+                </tr>
+            </thead>
+            <tbody id="user_groups_table_body">
+            </tbody>
+        </table>
+
+    </div>
+</div>
 {% endblock %}

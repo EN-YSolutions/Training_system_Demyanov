@@ -1,9 +1,9 @@
 from __future__ import annotations as _annotations
-from typing import Self
 
 import uuid as _uuid
 
 import bcrypt as _bcrypt
+from click import Group
 import psycopg as _psycopg
 
 import database.types as _types
@@ -44,6 +44,9 @@ class DBHelper:
             self.__database = _psycopg.connect(f'host={host} port={port} user={user} password={password}', autocommit=True)
 
 
+
+    # -------------------------------------------------- Аутентификация --------------------------------------------------
+
     def auth_user(self, login: str, password: str) -> _types.User | None:
 
         with self.__database.cursor() as cursor:
@@ -63,6 +66,9 @@ class DBHelper:
         return passworded_user.to_user()
 
 
+
+    # -------------------------------------------------- Пользователи --------------------------------------------------
+
     def get_all_users(self) -> list[_types.User]:
         with self.__database.cursor() as cursor:
             cursor.execute(f'''
@@ -81,6 +87,34 @@ class DBHelper:
             ''', (user_id, ))
             return _types.User.parse(result) if (result := cursor.fetchone()) else None
 
+
+    def get_user_groups(self, user_id: _uuid.UUID) -> list[_types.Group]:
+
+        with self.__database.cursor() as cursor:
+            cursor.execute(f'''
+                SELECT *
+                FROM {DBHelper.__TABLE_GROUPS_MEMBERS}
+                WHERE "student_id" = %s
+            ''', (user_id, ))
+            groups_ids: list[_uuid.UUID] = [row[0] for row in cursor.fetchall()]
+
+        result: list[_types.Group] = []
+        for group_id in groups_ids:
+            if (i := self.get_group(group_id)):
+                result.append(i)
+
+        return result
+
+
+    def delete_user_group(self, user_id: _uuid.UUID, group_id: _uuid.UUID):
+        with self.__database.cursor() as cursor:
+            cursor.execute(f'''
+                DELETE FROM {DBHelper.__TABLE_GROUPS_MEMBERS}
+                WHERE "student_id" = %s AND "group_id" = %s
+            ''', (user_id, group_id))
+
+
+    # -------------------------------------------------- Группы --------------------------------------------------
 
     def get_all_groups(self) -> list[_types.Group]:
         with self.__database.cursor() as cursor:
@@ -112,9 +146,8 @@ class DBHelper:
 
         result: list[_types.User] = []
         for user_id in users_ids:
-            user: _types.User | None = self.get_user(user_id)
-            if user:
-                result.append(user)
+            if (i := self.get_user(user_id)):
+                result.append(i)
 
         return result
 
@@ -128,6 +161,9 @@ class DBHelper:
             ''', (group_id, ))
             return int(result[0]) if (result := cursor.fetchone()) else 0
 
+
+
+    # -------------------------------------------------- Курсы --------------------------------------------------
 
     def get_all_courses(self) -> list[_types.Course]:
         with self.__database.cursor() as cursor:

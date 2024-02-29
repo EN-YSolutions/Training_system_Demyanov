@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<script src="/static/js/group.js" type="module" defer></script>
+
+<div class="d-flex justify-content-center mt-3" id="spinner">
+    <div class="spinner-border spinner-border-sm"></div>
+</div>
+
+<div class="d-flex justify-content-center mt-3 text-secondary" style="display: none !important;" id="empty_warn">
+    Группа не найдена
+</div>
+
+<div class="card my-3" id="group" style="display: none !important;">
+    <div class="card-header" id="group_title"></div>
+    <div class="card-body">
+        Куратор: <span id="group_curator_name"></span><br>
+        Курс: <span id="group_course_title"></span><br>
+        ID: <span id="group_id"></span>
+    </div>
+</div>
+
+<div class="card my-3" id="group_members" style="display: none !important;">
+    <div class="card-header">
+        Участники
+    </div>
+    <div class="card-body">
+
+        <span id="group_members_empty" style="display: none !important;">В группе нет ни одного пользователя</span>
+
+        <table class="table table-hover" id="group_members_table" style="display: none !important;">
+            <thead>
+                <tr>
+                    <th scope="col" class="col-5">Имя</th>
+                    <th scope="col" class="col-5">Логин</th>
+                    <th scope="col" class="col-2">Удаление из группы</th>
+                </tr>
+            </thead>
+            <tbody id="group_members_table_body">
+            </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
