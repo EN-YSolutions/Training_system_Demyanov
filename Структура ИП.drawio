@@ -1,0 +1,49 @@
+<mxfile host="app.diagrams.net" modified="2024-03-03T21:13:35.996Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:123.0) Gecko/20100101 Firefox/123.0" etag="31-nSXN4NW4LaXSFfdWS" version="24.0.1" type="device">
+  <diagram name="Страница — 1" id="Rj4XGwvloZxRWVDov5tM">
+    <mxGraphModel dx="2632" dy="1053" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Tf18G7bgB5hEnMAuDpAh-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Tf18G7bgB5hEnMAuDpAh-1" target="Tf18G7bgB5hEnMAuDpAh-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Tf18G7bgB5hEnMAuDpAh-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Tf18G7bgB5hEnMAuDpAh-1" target="Tf18G7bgB5hEnMAuDpAh-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Tf18G7bgB5hEnMAuDpAh-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Tf18G7bgB5hEnMAuDpAh-1" target="Tf18G7bgB5hEnMAuDpAh-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Tf18G7bgB5hEnMAuDpAh-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Tf18G7bgB5hEnMAuDpAh-1" target="Tf18G7bgB5hEnMAuDpAh-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Tf18G7bgB5hEnMAuDpAh-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Tf18G7bgB5hEnMAuDpAh-1" target="Tf18G7bgB5hEnMAuDpAh-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Tf18G7bgB5hEnMAuDpAh-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Tf18G7bgB5hEnMAuDpAh-1" target="Tf18G7bgB5hEnMAuDpAh-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Tf18G7bgB5hEnMAuDpAh-1" value="Собственник" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Tf18G7bgB5hEnMAuDpAh-2" value="Бухгалтерия" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-400" y="100" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Tf18G7bgB5hEnMAuDpAh-3" value="Финансы" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-240" y="100" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Tf18G7bgB5hEnMAuDpAh-4" value="Тестирование" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-80" y="100" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Tf18G7bgB5hEnMAuDpAh-5" value="&lt;div&gt;Графический&lt;/div&gt;&lt;div&gt;дизайн&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="100" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Tf18G7bgB5hEnMAuDpAh-6" value="Образование" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="100" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Tf18G7bgB5hEnMAuDpAh-7" value="Конструирование" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="100" width="120" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
