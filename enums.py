@@ -15,20 +15,20 @@ class HTTP(_Enum):
 
 
 class ErrorText(_Enum):
-    InternalServerError = 'internal server error'
-    InvalidRequestFormat = 'invalid request format'
-    NotImplementedYet = 'not implemented yet'
+    InternalServerError = 'Внутренняя ошибка сервера'
+    InvalidRequestFormat = 'Неверный формат запроса'
+    NotImplementedYet = 'Ещё не реализовано'
 
-    NotEnoughArguments = 'not enough arguments'
-    InvalidArgumentValue = 'invalid argument value'
+    NotEnoughArguments = 'Недостаточно аргументов'
+    InvalidArgumentValue = 'Неверное значение аргумента'
 
-    AuthenticationCookieNotFound = 'authentication cookie not found'
-    InvalidTokenSignature = 'invalid token signature'
-    TokenHasExpired = 'token has expired'
-    InvalidToken = 'invalid token'
+    AuthenticationCookieNotFound = 'cookie аутентификации не найдена'
+    InvalidTokenSignature = 'Неверная подпись токена'
+    TokenHasExpired = 'Срок действия токена истек'
+    InvalidToken = 'Недействительный токен'
 
-    AccessDenied = 'access denied'
+    AccessDenied = 'Доступ запрещён'
 
-    UserNotFound = 'user not found'
-    GroupNotFound = 'group not found'
-    CourseNotFound = 'course not found'
+    UserNotFound = 'Пользователь не найден'
+    GroupNotFound = 'Группа не найдена'
+    CourseNotFound = 'Курс не найден'

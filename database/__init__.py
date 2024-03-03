@@ -3,11 +3,11 @@ from __future__ import annotations as _annotations
 import uuid as _uuid
 
 import bcrypt as _bcrypt
-from click import Group
 import psycopg as _psycopg
 
 import database.types as _types
 import database.enums as _enums
+import database.exceptions as _exceptions
 
 
 
@@ -33,8 +33,8 @@ class DBHelper:
         self.__db_connect(host, port, user, password, dbname)
 
         with self.__database.cursor() as cursor:
-            cursor.execute(open('sql/create_types.sql').read()) # type: ignore
-            cursor.execute(open('sql/create_tables.sql').read()) # type: ignore
+            cursor.execute(open('database/sql/create_types.sql').read()) # type: ignore
+            cursor.execute(open('database/sql/create_tables.sql').read()) # type: ignore
 
 
     def __db_connect(self, host: str, port: int, user: str, password: str, dbname: str | None = None):
@@ -47,7 +47,7 @@ class DBHelper:
 
     # -------------------------------------------------- Аутентификация --------------------------------------------------
 
-    def auth_user(self, login: str, password: str) -> _types.User | None:
+    def auth_user(self, login: str, password: str) -> _types.User:
 
         with self.__database.cursor() as cursor:
             cursor.execute(f'''
@@ -58,10 +58,10 @@ class DBHelper:
             passworded_user: _types.UserPassworded | None = _types.UserPassworded.parse(result) if (result := cursor.fetchone()) else None
 
         if not passworded_user:
-            return None
+            raise _exceptions.UserNotFoundException
 
         if not _bcrypt.checkpw(password.encode(), passworded_user.password.encode()):
-            return None
+            raise _exceptions.UserNotFoundException
 
         return passworded_user.to_user()
 
@@ -78,17 +78,25 @@ class DBHelper:
             return [_types.User.parse(row) for row in cursor.fetchall()]
 
 
-    def get_user(self, user_id: _uuid.UUID) -> _types.User | None:
+    def get_user(self, user_id: _uuid.UUID) -> _types.User:
+
         with self.__database.cursor() as cursor:
             cursor.execute(f'''
                 SELECT "id", "login", "role", "name", "balance", "scoring_system"
                 FROM {DBHelper.__TABLE_USERS}
                 WHERE "id" = %s
             ''', (user_id, ))
-            return _types.User.parse(result) if (result := cursor.fetchone()) else None
+            user: _types.User | None = (_types.User.parse(result) if (result := cursor.fetchone()) else None)
+
+        if not user:
+            raise _exceptions.UserNotFoundException
+
+        return user
 
 
     def get_user_groups(self, user_id: _uuid.UUID) -> list[_types.Group]:
+
+        self.get_user(user_id)
 
         with self.__database.cursor() as cursor:
             cursor.execute(f'''
@@ -98,20 +106,13 @@ class DBHelper:
             ''', (user_id, ))
             groups_ids: list[_uuid.UUID] = [row[0] for row in cursor.fetchall()]
 
-        result: list[_types.Group] = []
+        groups: list[_types.Group] = []
         for group_id in groups_ids:
             if (i := self.get_group(group_id)):
-                result.append(i)
+                groups.append(i)
 
-        return result
+        return groups
 
-
-    def delete_user_group(self, user_id: _uuid.UUID, group_id: _uuid.UUID):
-        with self.__database.cursor() as cursor:
-            cursor.execute(f'''
-                DELETE FROM {DBHelper.__TABLE_GROUPS_MEMBERS}
-                WHERE "student_id" = %s AND "group_id" = %s
-            ''', (user_id, group_id))
 
 
     # -------------------------------------------------- Группы --------------------------------------------------
@@ -125,17 +126,26 @@ class DBHelper:
             return [_types.Group.parse(row) for row in cursor.fetchall()]
 
 
-    def get_group(self, group_id: _uuid.UUID) -> _types.Group | None:
+    def get_group(self, group_id: _uuid.UUID) -> _types.Group:
+
         with self.__database.cursor() as cursor:
             cursor.execute(f'''
                 SELECT *
                 FROM {DBHelper.__TABLE_GROUPS}
                 WHERE "id" = %s
             ''', (group_id, ))
-            return _types.Group.parse(result) if (result := cursor.fetchone()) else None
+            group: _types.Group | None = _types.Group.parse(result) if (result := cursor.fetchone()) else None
+
+        if not group:
+            raise _exceptions.GroupNotFoundException
+
+        return group
 
 
     def get_group_members(self, group_id: _uuid.UUID) -> list[_types.User]:
+
+        self.get_group(group_id)
+
         with self.__database.cursor() as cursor:
             cursor.execute(f'''
                 SELECT "student_id"
@@ -153,6 +163,9 @@ class DBHelper:
 
 
     def get_group_members_amount(self, group_id) -> int:
+
+        self.get_group(group_id)
+
         with self.__database.cursor() as cursor:
             cursor.execute(f'''
                 SELECT COUNT("student_id")
@@ -160,6 +173,34 @@ class DBHelper:
                 WHERE "group_id" = %s
             ''', (group_id, ))
             return int(result[0]) if (result := cursor.fetchone()) else 0
+
+
+    def add_group_member(self, group_id: _uuid.UUID, user_id: _uuid.UUID) -> _types.User:
+
+        self.get_group(group_id)
+        user: _types.User = self.get_user(user_id)
+
+        with self.__database.cursor() as cursor:
+            cursor.execute(f'''
+                INSERT INTO {DBHelper.__TABLE_GROUPS_MEMBERS} ("group_id", "student_id")
+                VALUES (%s, %s)
+            ''', (group_id, user_id))
+
+        return user
+
+
+    def delete_group_member(self, group_id: _uuid.UUID, user_id: _uuid.UUID) -> _types.User:
+
+        self.get_group(group_id)
+        user: _types.User | None = self.get_user(user_id)
+
+        with self.__database.cursor() as cursor:
+            cursor.execute(f'''
+                DELETE FROM {DBHelper.__TABLE_GROUPS_MEMBERS}
+                WHERE "group_id" = %s AND "student_id" = %s
+            ''', (group_id, user_id))
+
+        return user
 
 
 
@@ -174,14 +215,24 @@ class DBHelper:
             return [_types.Course.parse(row) for row in cursor.fetchall()]
 
 
-    def get_course(self, course_id: _uuid.UUID) -> _types.Course | None:
+    def get_course(self, course_id: _uuid.UUID) -> _types.Course:
+
         with self.__database.cursor() as cursor:
             cursor.execute(f'''
                 SELECT *
                 FROM {DBHelper.__TABLE_COURSES}
                 WHERE "id" = %s
             ''', (course_id, ))
-            return _types.Course.parse(result) if (result := cursor.fetchone()) else None
+            course: _types.Course | None = _types.Course.parse(result) if (result := cursor.fetchone()) else None
+
+        if not course:
+            raise _exceptions.CourseNotFoundException
+
+        return course
+
+
+    # ----------------------------------------------------------------------------------------------------
+
 
 
     def __del__(self):

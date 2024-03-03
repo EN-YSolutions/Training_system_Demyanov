@@ -1,3 +1,6 @@
+import * as api from './api.js';
+
+
 document.addEventListener('DOMContentLoaded', () =>
 {
     if (window.matchMedia)
@@ -16,8 +19,14 @@ document.addEventListener('DOMContentLoaded', () =>
 
     document.querySelectorAll('#logout').forEach(e =>
     {
-        e.addEventListener('click', () => {
+        e.addEventListener('click', event =>
+        {
+            event.preventDefault();
 
+            api.make_request(api.LOGOUT)
+            .then(result => {
+                window.location.replace('/');
+            });
         });
     });
 
@@ -25,18 +34,14 @@ document.addEventListener('DOMContentLoaded', () =>
     const sidebar_groups = document.querySelectorAll('#sidebar_groups');
     const sidebar_courses = document.querySelectorAll('#sidebar_courses');
 
-    const sidebar_add_to_group = document.querySelectorAll('#sidebar_add_to_group');
     const sidebar_course_edit = document.querySelectorAll('#sidebar_course_edit');
-    const sidebar_group_info = document.querySelectorAll('#sidebar_group_info');
     const sidebar_tasks_info = document.querySelectorAll('#sidebar_tasks_info');
 
     const breadcrumb_users = document.querySelectorAll('#breadcrumb_users');
     const breadcrumb_groups = document.querySelectorAll('#breadcrumb_groups');
     const breadcrumb_courses = document.querySelectorAll('#breadcrumb_courses');
 
-    const breadcrumb_add_to_group = document.querySelectorAll('#breadcrumb_add_to_group');
     const breadcrumb_course_edit = document.querySelectorAll('#breadcrumb_course_edit');
-    const breadcrumb_group_info = document.querySelectorAll('#breadcrumb_group_info');
     const breadcrumb_tasks_info = document.querySelectorAll('#breadcrumb_tasks_info');
 
     switch (document.location.pathname)
@@ -56,17 +61,9 @@ document.addEventListener('DOMContentLoaded', () =>
             sidebar_courses.forEach(e => e.classList.add('active'));
             breadcrumb_courses.forEach(e => e.removeAttribute('style'));
             break;
-        case '/add_to_group':
-            sidebar_add_to_group.forEach(e => e.classList.add('active'));
-            breadcrumb_add_to_group.forEach(e => e.removeAttribute('style'));
-            break;
         case '/course_edit':
             sidebar_course_edit.forEach(e => e.classList.add('active'));
             breadcrumb_course_edit.forEach(e => e.removeAttribute('style'));
-            break;
-        case '/group_info':
-            sidebar_group_info.forEach(e => e.classList.add('active'));
-            breadcrumb_group_info.forEach(e => e.removeAttribute('style'));
             break;
         case '/tasks_info':
             sidebar_tasks_info.forEach(e => e.classList.add('active'));

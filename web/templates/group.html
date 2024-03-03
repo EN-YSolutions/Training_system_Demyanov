@@ -26,9 +26,21 @@
     </div>
     <div class="card-body">
 
-        <span id="group_members_empty" style="display: none !important;">В группе нет ни одного пользователя</span>
+        <form id="group_members_add">
+            <div class="row g-3">
+                <div class="col">
+                    <input type="text" class="form-control" name="user_id" id="group_members_add_user_id" required placeholder="ID пользователя">
+                </div>
+                <div class="col col-auto">
+                    <button type="submit" class="btn btn-outline-success">Добавить</button>
+                </div>
+            </div>
+            <span class="d-block mt-1 text-secondary">Нажмите кнопку &#171;Выбрать&#187; на странице <a href="/users">Список пользователей</a>, чтобы автоматически вставить ID пользователя здесь</span>
+        </form>
 
-        <table class="table table-hover" id="group_members_table" style="display: none !important;">
+        <span class="d-block mt-3" id="group_members_empty" style="display: none !important;">В группе нет ни одного пользователя</span>
+
+        <table class="m-0 mt-3 table table-hover" id="group_members_table" style="display: none !important;">
             <thead>
                 <tr>
                     <th scope="col" class="col-5">Имя</th>

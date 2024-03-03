@@ -47,7 +47,7 @@ const make_list_item = (e) =>
     card_body.classList.add('card-body');
 
     card_body.innerHTML = `Автор: <a href="/user?id=${e.author.id}">${e.author.name}</a>`;
-    card_body.innerHTML += `<br>Цена: ${e.price}`;
+    card_body.innerHTML += `<br>Цена: ${e.price? e.price : 'бесплатно'}`;
     card_body.innerHTML += `<br>ID: ${e.id}`;
 
 

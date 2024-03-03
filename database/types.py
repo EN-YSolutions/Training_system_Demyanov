@@ -17,12 +17,16 @@ class User:
     login: str
     role: _enums.UserRole
     name: str
-    balance: float | None
+    _balance: int | None
     scoring_system: _enums.ScoringSystem | None
+
+    @property
+    def balance(self) -> float | None:
+        return self._balance / 100 if self._balance is not None else None
 
     @staticmethod
     def parse(row: tuple) -> _types.User:
-        return _types.User(row[0], row[1], _enums.UserRole.parse(row[2]), row[3], float(row[4][2:]) if row[4] else None, _enums.ScoringSystem.parse(row[5]) if row[5] else None)
+        return _types.User(row[0], row[1], _enums.UserRole.parse(row[2]), row[3], row[4], _enums.ScoringSystem.parse(row[5]) if row[5] else None)
 
     def as_dict(self) -> dict[str, _typing.Any]:
         return {
@@ -42,10 +46,10 @@ class UserPassworded(User):
 
     @staticmethod
     def parse(row: tuple) -> _types.UserPassworded:
-        return _types.UserPassworded(row[0], row[1], _enums.UserRole.parse(row[3]), row[4], float(row[5][2:]) if row[5] else None, _enums.ScoringSystem.parse(row[6]) if row[6] else None, row[2])
+        return _types.UserPassworded(row[0], row[1], _enums.UserRole.parse(row[3]), row[4], row[5], _enums.ScoringSystem.parse(row[6]) if row[6] else None, row[2])
 
     def to_user(self) -> User:
-        return User(self.id, self.login, self.role, self.name, self.balance, self.scoring_system)
+        return User(self.id, self.login, self.role, self.name, self._balance, self.scoring_system)
 
 
 @_dataclasses.dataclass
@@ -83,13 +87,17 @@ class Course:
 
     id: _uuid.UUID
     author_id: _uuid.UUID
-    price: float | None
+    _price: int | None
     title: str
     description: str | None
 
+    @property
+    def price(self) -> float | None:
+        return self._price / 100 if self._price is not None else None
+
     @staticmethod
     def parse(row: tuple) -> _types.Course:
-        return _types.Course(row[0], row[1], float(row[2][2:]), row[3], row[4])
+        return _types.Course(row[0], row[1], row[2], row[3], row[4])
 
     def as_dict(self, database: _database.DBHelper | None = None, depth: int = 0) -> dict[str, _typing.Any]:
         if depth == 0 or not database:

@@ -74,8 +74,14 @@ document.addEventListener('DOMContentLoaded', () =>
 
         user_groups_table.removeAttribute('style');
 
-        result.groups.forEach(e => {
-            user_groups_table_body.append(make_group_list_item(e, params.get('id')));
+        result.groups.forEach(e =>
+        {
+            user_groups_table_body.append(make_group_list_item(e, params.get('id'), () => {
+                if (user_groups_table_body.childElementCount == 0) {
+                    user_groups_table.setAttribute('style', 'display: none !important');
+                    user_groups_empty.removeAttribute('style');
+                }
+            }));
         });
     })
     .catch(error => {
@@ -85,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () =>
 });
 
 
-const make_group_list_item = (e, user_id) =>
+const make_group_list_item = (e, user_id, on_delete) =>
 {
     const tr = document.createElement('tr');
 
@@ -103,12 +109,13 @@ const make_group_list_item = (e, user_id) =>
     delete_button.addEventListener('click', event =>
     {
         const data = new FormData();
-        data.append('user_id', user_id);
         data.append('group_id', e.id);
+        data.append('user_id', user_id);
 
-        api.make_request(api.DELETE_USER_GROUP, data)
+        api.make_request(api.DELETE_GROUP_MEMBER, data)
         .then(result => {
             tr.remove();
+            on_delete();
         })
         .catch(error => {
             alert.show(error.api? `Ошибка API: ${error.description}` : error.http? `Ошибка HTTP: ${error.code} ${error.text}` : 'Неизвестная ошибка', 10000);

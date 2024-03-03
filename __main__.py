@@ -13,6 +13,8 @@ from flask import Flask, Response, make_response, redirect, url_for, render_temp
 from database import *
 from database.types import *
 from database.enums import *
+from database.exceptions import *
+
 from enums import HTTP, ErrorText
 
 
@@ -77,15 +79,6 @@ def index() -> Response:
     return make_response(render_template('index.html'))
 
 
-# Выход из аккаунта (кука httpOnly не доступна в JS на стороне клиента, нужно удалять на стороне сервера)
-@app.get('/logout')
-def logout() -> Response:
-    r: Response = make_response(redirect(url_for(index.__name__)))
-    r.set_cookie('auth_token', '', expires=0, domain='project.wg', secure=True, httponly=True)
-    return r
-
-
-
 # Страница "Список пользователей"
 @app.get('/users')
 def users() -> Response:
@@ -125,22 +118,10 @@ def course() -> Response:
 
 
 
-# Страница "Добавление в группу"
-@app.get('/add_to_group')
-def add_to_group() -> Response:
-    return make_response(render_template('add_to_group.html'))
-
-
 # Страница "Редактирование курса"
 @app.get('/course_edit')
 def course_edit() -> Response:
     return make_response(render_template('course_edit.html'))
-
-
-# Страница "Информация о группе"
-@app.get('/group_info')
-def group_info() -> Response:
-    return make_response(render_template('group_info.html'))
 
 
 # Страница "Информация о заданиях"
@@ -154,7 +135,7 @@ def tasks_info() -> Response:
 
 # -------------------------------------------------- Аутентификация --------------------------------------------------
 
-# Аутентификация
+# Вход в аккаунт
 @app.post('/api/login')
 def login() -> Response:
 
@@ -164,8 +145,12 @@ def login() -> Response:
     except:
         return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
 
-    if not (user := database.auth_user(login, password)):
+    try:
+        user = database.auth_user(login, password)
+    except UserNotFoundException:
         return APIError(HTTP.NotFound.value, ErrorText.UserNotFound.value)
+    except:
+        return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
     if user.role != UserRole.Admin:
         return APIError(HTTP.Forbidden.value, ErrorText.AccessDenied.value)
@@ -177,6 +162,12 @@ def login() -> Response:
     return r
 
 
+# Выход из аккаунта
+@app.post('/api/logout')
+def logout() -> Response:
+    r: Response = APIResult({})
+    r.set_cookie('auth_token', '', expires=0, domain='project.wg', secure=True, httponly=True)
+    return r
 
 
 
@@ -204,11 +195,10 @@ def get_user(token: dict[str, Any]) -> Response:
         return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
 
     try:
-        user: User | None = database.get_user(user_id)
-        if user:
-            return APIResult({'user': user.as_dict()})
-        else:
-            return APIError(HTTP.NotFound.value, ErrorText.UserNotFound.value)
+        user: User = database.get_user(user_id)
+        return APIResult({'user': user.as_dict()})
+    except UserNotFoundException:
+        return APIError(HTTP.NotFound.value, ErrorText.UserNotFound.value)
     except:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
@@ -227,24 +217,8 @@ def get_user_groups(token: dict[str, Any]) -> Response:
     try:
         groups: list[Group] = database.get_user_groups(user_id)
         return APIResult({'groups': [i.as_dict(database, depth) for i in groups]})
-    except:
-        return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
-
-
-# Удаление пользователя из группы
-@app.post('/api/delete_user_group')
-@Authentication
-def delete_user_group(token: dict[str, Any]) -> Response:
-
-    try:
-        user_id: UUID = UUID(request.form['user_id'])
-        group_id: UUID = UUID(request.form['group_id'])
-    except:
-        return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
-
-    try:
-        database.delete_user_group(user_id, group_id)
-        return APIResult({})
+    except UserNotFoundException:
+        return APIError(HTTP.NotFound.value, ErrorText.UserNotFound.value)
     except:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
@@ -283,15 +257,15 @@ def get_group(token: dict[str, Any]) -> Response:
         return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
 
     try:
-        group: Group | None = database.get_group(group_id)
-        if group:
-            return APIResult({'group': group.as_dict(database, depth)})
-        else:
-            return APIError(HTTP.NotFound.value, ErrorText.GroupNotFound.value)
+        group: Group = database.get_group(group_id)
+        return APIResult({'group': group.as_dict(database, depth)})
+    except GroupNotFoundException:
+        return APIError(HTTP.NotFound.value, ErrorText.GroupNotFound.value)
     except:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
 
+# Получение списка участников группы
 @app.post('/api/get_group_members')
 @Authentication
 def get_group_members(token: dict[str, Any]) -> Response:
@@ -304,6 +278,53 @@ def get_group_members(token: dict[str, Any]) -> Response:
     try:
         users: list[User] = database.get_group_members(group_id)
         return APIResult({'users': [i.as_dict() for i in users]})
+    except GroupNotFoundException:
+        return APIError(HTTP.NotFound.value, ErrorText.GroupNotFound.value)
+    except:
+        return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
+
+
+# Добавление пользователя в группу
+@app.post('/api/add_group_member')
+@Authentication
+def add_group_member(token: dict[str, Any]) -> Response:
+
+    try:
+        user_id: UUID = UUID(request.form['user_id'])
+        group_id: UUID = UUID(request.form['group_id'])
+    except:
+        return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
+
+    try:
+        user: User = database.add_group_member(group_id, user_id)
+        return APIResult({'user': user.as_dict()})
+    except GroupNotFoundException:
+        return APIError(HTTP.NotFound.value, ErrorText.GroupNotFound.value)
+    except UserNotFoundException:
+        return APIError(HTTP.NotFound.value, ErrorText.UserNotFound.value)
+    except:
+        return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
+
+
+
+# Удаление пользователя из группы
+@app.post('/api/delete_group_member')
+@Authentication
+def delete_group_member(token: dict[str, Any]) -> Response:
+
+    try:
+        user_id: UUID = UUID(request.form['user_id'])
+        group_id: UUID = UUID(request.form['group_id'])
+    except:
+        return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
+
+    try:
+        user: User = database.delete_group_member(group_id, user_id)
+        return APIResult({'user': user.as_dict()})
+    except GroupNotFoundException:
+        return APIError(HTTP.NotFound.value, ErrorText.GroupNotFound.value)
+    except UserNotFoundException:
+        return APIError(HTTP.NotFound.value, ErrorText.UserNotFound.value)
     except:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
@@ -342,11 +363,10 @@ def get_course(token: dict[str, Any]) -> Response:
         return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
 
     try:
-        course: Course | None = database.get_course(course_id)
-        if course:
-            return APIResult({'course': course.as_dict(database, depth)})
-        else:
-            return APIError(HTTP.NotFound.value, ErrorText.CourseNotFound.value)
+        course: Course = database.get_course(course_id)
+        return APIResult({'course': course.as_dict(database, depth)})
+    except CourseNotFoundException:
+        return APIError(HTTP.NotFound.value, ErrorText.CourseNotFound.value)
     except:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 

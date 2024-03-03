@@ -1,13 +1,15 @@
 export const LOGIN = 'login';
+export const LOGOUT = 'logout';
 
 export const GET_USERS = 'get_users';
 export const GET_USER = 'get_user';
 export const GET_USER_GROUPS = 'get_user_groups';
-export const DELETE_USER_GROUP = 'delete_user_group';
 
 export const GET_GROUPS = 'get_groups';
 export const GET_GROUP = 'get_group';
 export const GET_GROUP_MEMBERS = 'get_group_members';
+export const ADD_GROUP_MEMBER = 'add_group_member';
+export const DELETE_GROUP_MEMBER = 'delete_group_member';
 
 export const GET_COURSES = 'get_courses';
 export const GET_COURSE = 'get_course';

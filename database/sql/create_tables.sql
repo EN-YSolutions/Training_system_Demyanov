@@ -5,13 +5,20 @@ CREATE TABLE IF NOT EXISTS "users"
     "password"          varchar(60)         NOT NULL,
     "role"              user_role           NOT NULL,
     "name"              varchar(255)        NOT NULL,
-    "balance"           money,
+    "balance"           integer,
     "scoring_system"    scoring_system,
 
     CONSTRAINT "pk_user_id"
         PRIMARY KEY ("id"),
     CONSTRAINT "unique_user_login"
-        UNIQUE ("login")
+        UNIQUE ("login"),
+
+    CONSTRAINT "non_empty_user_login"
+        CHECK (char_length("login") > 0),
+    CONSTRAINT "non_empty_user_name"
+        CHECK (char_length("name") > 0),
+    CONSTRAINT "non_negative_user_balance"
+        CHECK ("balance" >= 0)
 );
 
 
@@ -19,14 +26,21 @@ CREATE TABLE IF NOT EXISTS "courses"
 (
     "id"            UUID            NOT NULL    DEFAULT gen_random_uuid(),
     "author_id"     UUID            NOT NULL,
-    "price"         money,
+    "price"         integer,
     "title"         varchar(255)    NOT NULL,
     "description"   text,
 
     CONSTRAINT "pk_course_id"
         PRIMARY KEY ("id"),
     CONSTRAINT "fk_course_author_id"
-        FOREIGN KEY ("author_id") REFERENCES "users"("id") ON DELETE CASCADE
+        FOREIGN KEY ("author_id") REFERENCES "users"("id") ON DELETE CASCADE,
+
+    CONSTRAINT "positive_course_price"
+        CHECK ("price" > 0),
+    CONSTRAINT "non_empty_course_title"
+        CHECK (char_length("title") > 0),
+    CONSTRAINT "non_empty_course_description"
+        CHECK (char_length("description") > 0)
 );
 
 
@@ -42,7 +56,10 @@ CREATE TABLE IF NOT EXISTS "groups"
     CONSTRAINT "fk_group_course"
         FOREIGN KEY ("course_id") REFERENCES "courses"("id") ON DELETE CASCADE,
     CONSTRAINT "fk_group_curator_id"
-        FOREIGN KEY ("curator_id") REFERENCES "users"("id") ON DELETE CASCADE
+        FOREIGN KEY ("curator_id") REFERENCES "users"("id") ON DELETE CASCADE,
+
+    CONSTRAINT "non_empty_group_title"
+        CHECK (char_length("title") > 0)
 );
 
 
@@ -73,7 +90,12 @@ CREATE TABLE IF NOT EXISTS "lessons"
     CONSTRAINT "fk_lesson_course_id"
         FOREIGN KEY ("course_id") REFERENCES "courses"("id") ON DELETE CASCADE,
     CONSTRAINT "fk_lesson_teacher_id"
-        FOREIGN KEY ("teacher_id") REFERENCES "users"("id") ON DELETE CASCADE
+        FOREIGN KEY ("teacher_id") REFERENCES "users"("id") ON DELETE CASCADE,
+
+    CONSTRAINT "non_empty_lesson_title"
+        CHECK (char_length("title") > 0),
+    CONSTRAINT "non_empty_lesson_text"
+        CHECK (char_length("text") > 0)
 );
 
 
@@ -87,7 +109,12 @@ CREATE TABLE IF NOT EXISTS "tasks"
     CONSTRAINT "pk_task_id"
         PRIMARY KEY ("id"),
     CONSTRAINT "fk_task_lesson_id"
-        FOREIGN KEY ("lesson_id") REFERENCES "lessons"("id") ON DELETE CASCADE
+        FOREIGN KEY ("lesson_id") REFERENCES "lessons"("id") ON DELETE CASCADE,
+
+    CONSTRAINT "non_empty_task_title"
+        CHECK (char_length("title") > 0),
+    CONSTRAINT "non_empty_task_description"
+        CHECK (char_length("description") > 0)
 );
 
 
@@ -105,7 +132,12 @@ CREATE TABLE IF NOT EXISTS "hometasks"
     CONSTRAINT "fk_hometask_task_id"
         FOREIGN KEY ("task_id") REFERENCES "tasks"("id") ON DELETE CASCADE,
     CONSTRAINT "fk_hometask_student_id"
-        FOREIGN KEY ("student_id") REFERENCES "users"("id") ON DELETE CASCADE
+        FOREIGN KEY ("student_id") REFERENCES "users"("id") ON DELETE CASCADE,
+
+    CONSTRAINT "non_empty_hometask_title"
+        CHECK (char_length("title") > 0),
+    CONSTRAINT "non_empty_hometask_text"
+        CHECK (char_length("text") > 0)
 );
 
 

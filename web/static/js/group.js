@@ -46,6 +46,16 @@ document.addEventListener('DOMContentLoaded', () =>
     const group_members_table = document.querySelector('#group_members_table');
     const group_members_table_body = document.querySelector('#group_members_table_body');
 
+    const group_members_table_body_on_row_delete = () =>
+    {
+        if (group_members_table_body.childElementCount == 0)
+        {
+            group_members_table.setAttribute('style', 'display: none !important');
+            group_members_empty.removeAttribute('style');
+        }
+    }
+
+
     data = new FormData();
     data.append('id', params.get('id'));
 
@@ -62,17 +72,43 @@ document.addEventListener('DOMContentLoaded', () =>
         group_members_table.removeAttribute('style');
 
         result.users.forEach(e => {
-            group_members_table_body.append(make_members_list_item(e, params.get('id')));
+            group_members_table_body.append(make_members_list_item(e, params.get('id'), group_members_table_body_on_row_delete));
         });
     })
     .catch(error => {
         alert.show(error.api? `Ошибка API: ${error.description}` : error.http? `Ошибка HTTP: ${error.code} ${error.text}` : 'Неизвестная ошибка', 10000);
         group_members.setAttribute('style', 'display: none !important');
     });
+
+
+    const group_members_add = document.querySelector('#group_members_add');
+    const group_members_add_user_id = document.querySelector('#group_members_add_user_id');
+
+    group_members_add_user_id.value = sessionStorage.getItem('selected_user_id');
+
+    group_members_add.addEventListener('submit', event =>
+    {
+        event.preventDefault();
+
+        const data = new FormData(event.target);
+        data.append('group_id', params.get('id'));
+
+        api.make_request(api.ADD_GROUP_MEMBER, data)
+        .then(result =>
+        {
+            group_members_empty.setAttribute('style', 'display: none !important');
+            group_members_table.removeAttribute('style');
+
+            group_members_table_body.append(make_members_list_item(result.user, params.get('id'), group_members_table_body_on_row_delete));
+        })
+        .catch(error => {
+            alert.show(error.api? `Ошибка API: ${error.description}` : error.http? `Ошибка HTTP: ${error.code} ${error.text}` : 'Неизвестная ошибка', 10000);
+        });
+    });
 });
 
 
-const make_members_list_item = (e, group_id) =>
+const make_members_list_item = (e, group_id, on_delete) =>
 {
     const tr = document.createElement('tr');
 
@@ -93,9 +129,10 @@ const make_members_list_item = (e, group_id) =>
         data.append('user_id', e.id);
         data.append('group_id', group_id);
 
-        api.make_request(api.DELETE_USER_GROUP, data)
+        api.make_request(api.DELETE_GROUP_MEMBER, data)
         .then(result => {
             tr.remove();
+            on_delete();
         })
         .catch(error => {
             alert.show(error.api? `Ошибка API: ${error.description}` : error.http? `Ошибка HTTP: ${error.code} ${error.text}` : 'Неизвестная ошибка', 10000);
