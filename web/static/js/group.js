@@ -4,18 +4,17 @@ import * as alert from './alert.js';
 
 document.addEventListener('DOMContentLoaded', () =>
 {
-    const spinner = document.querySelector('#spinner');
-    const empty_warn = document.querySelector('#empty_warn');
-
-    const group = document.querySelector('#group');
-
-    const group_title = document.querySelector('#group_title');
-    const group_curator_name = document.querySelector('#group_curator_name');
-    const group_course_title = document.querySelector('#group_course_title');
-    const group_id = document.querySelector('#group_id');
+    const spinner = document.getElementById('spinner');
 
     const params = new URLSearchParams(window.location.search);
 
+
+    // Карточка #1. Информация о группе
+    const group = document.getElementById('group');
+    const group_title = document.getElementById('group_title');
+    const group_curator_name = document.getElementById('group_curator_name');
+    const group_course_title = document.getElementById('group_course_title');
+    const group_id = document.getElementById('group_id');
 
     let data = new FormData();
     data.append('id', params.get('id'));
@@ -24,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () =>
     api.make_request(api.GET_GROUP, data)
     .then(result =>
     {
-        group.removeAttribute('style');
+        group.dataset.eduHide = false;
 
         group_title.innerText = result.group.title;
         group_curator_name.innerHTML = `<a href="/user?id=${result.group.curator.id}">${result.group.curator.name}</a>`;
@@ -33,28 +32,27 @@ document.addEventListener('DOMContentLoaded', () =>
     })
     .catch(error => {
         alert.show(error.api? `Ошибка API: ${error.description}` : error.http? `Ошибка HTTP: ${error.code} ${error.text}` : 'Неизвестная ошибка', 10000);
-        group.setAttribute('style', 'display: none !important');
     })
     .finally(() => {
-        spinner.setAttribute('style', 'display: none !important;');
+        spinner.dataset.eduHide = true;
     });
 
 
-    const group_members = document.querySelector('#group_members');
+    // Карточка #2. Участники группы
+    const members = document.getElementById('members');
+    const members_empty = document.getElementById('members_empty');
+    const members_form = document.getElementById('members_form');
+    const members_form_user_id = document.getElementById('members_form_user_id');
+    const members_table = document.getElementById('members_table');
+    const members_table_body = document.getElementById('members_table_body');
 
-    const group_members_empty = document.querySelector('#group_members_empty');
-    const group_members_table = document.querySelector('#group_members_table');
-    const group_members_table_body = document.querySelector('#group_members_table_body');
-
-    const group_members_table_body_on_row_delete = () =>
+    const members_on_delete = () =>
     {
-        if (group_members_table_body.childElementCount == 0)
-        {
-            group_members_table.setAttribute('style', 'display: none !important');
-            group_members_empty.removeAttribute('style');
+        if (members_table_body.childElementCount == 0) {
+            members_table.dataset.eduHide = true;
+            members_empty.dataset.eduHide = false;
         }
     }
-
 
     data = new FormData();
     data.append('id', params.get('id'));
@@ -62,31 +60,28 @@ document.addEventListener('DOMContentLoaded', () =>
     api.make_request(api.GET_GROUP_MEMBERS, data)
     .then(result =>
     {
-        group_members.removeAttribute('style');
+        members.dataset.eduHide = false;
 
         if (result.users.length == 0) {
-            group_members_empty.removeAttribute('style');
+            members_empty.dataset.eduHide = false;
             return;
         }
 
-        group_members_table.removeAttribute('style');
+        members_table.dataset.eduHide = false;
 
         result.users.forEach(e => {
-            group_members_table_body.append(make_members_list_item(e, params.get('id'), group_members_table_body_on_row_delete));
+            members_table_body.append(make_members_list_item(e, params.get('id'), members_on_delete));
         });
     })
     .catch(error => {
         alert.show(error.api? `Ошибка API: ${error.description}` : error.http? `Ошибка HTTP: ${error.code} ${error.text}` : 'Неизвестная ошибка', 10000);
-        group_members.setAttribute('style', 'display: none !important');
     });
 
 
-    const group_members_add = document.querySelector('#group_members_add');
-    const group_members_add_user_id = document.querySelector('#group_members_add_user_id');
+    // Форма добавление участника группы
+    members_form_user_id.value = sessionStorage.getItem('selected_user_id');
 
-    group_members_add_user_id.value = sessionStorage.getItem('selected_user_id');
-
-    group_members_add.addEventListener('submit', event =>
+    members_form.addEventListener('submit', event =>
     {
         event.preventDefault();
 
@@ -96,10 +91,10 @@ document.addEventListener('DOMContentLoaded', () =>
         api.make_request(api.ADD_GROUP_MEMBER, data)
         .then(result =>
         {
-            group_members_empty.setAttribute('style', 'display: none !important');
-            group_members_table.removeAttribute('style');
+            members_empty.dataset.eduHide = true;
+            members_table.dataset.eduHide = false;
 
-            group_members_table_body.append(make_members_list_item(result.user, params.get('id'), group_members_table_body_on_row_delete));
+            members_table_body.append(make_members_list_item(result.user, params.get('id'), members_on_delete));
         })
         .catch(error => {
             alert.show(error.api? `Ошибка API: ${error.description}` : error.http? `Ошибка HTTP: ${error.code} ${error.text}` : 'Неизвестная ошибка', 10000);

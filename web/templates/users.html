@@ -3,11 +3,25 @@
 {% block content %}
 <script src="/static/js/users.js" type="module" defer></script>
 
+<!-- <div class="card">
+    <form id="form_create_user">
+        <div class="card-header">Создание нового пользователя</div>
+        <div class="card-body">
+            <input type="text" class="form-control" required placeholder="Имя">
+            <input type="text" class="form-control mt-3" required placeholder="Логин">
+            <input type="password" class="form-control mt-3" required placeholder="Пароль">
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-outline-success">Создать</button>
+        </div>
+    </form>
+</div> -->
+
 <div class="d-flex justify-content-center mt-3" id="spinner">
     <div class="spinner-border spinner-border-sm"></div>
 </div>
 
-<div class="d-flex justify-content-center mt-3 text-secondary" style="display: none !important;" id="empty_warn">
+<div class="d-flex justify-content-center mt-3 text-secondary" id="empty_warn" data-edu-hide="true">
     Пользователей ещё пока нет
 </div>
 

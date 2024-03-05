@@ -8,3 +8,7 @@ class GroupNotFoundException(Exception):
 
 class CourseNotFoundException(Exception):
     pass
+
+
+class UserIsNotAStudentException(Exception):
+    pass

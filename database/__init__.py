@@ -180,6 +180,9 @@ class DBHelper:
         self.get_group(group_id)
         user: _types.User = self.get_user(user_id)
 
+        if user.role != _enums.UserRole.Student:
+            raise _exceptions.UserIsNotAStudentException
+
         with self.__database.cursor() as cursor:
             cursor.execute(f'''
                 INSERT INTO {DBHelper.__TABLE_GROUPS_MEMBERS} ("group_id", "student_id")
@@ -231,7 +234,20 @@ class DBHelper:
         return course
 
 
-    # ----------------------------------------------------------------------------------------------------
+
+    # -------------------------------------------------- Уроки --------------------------------------------------
+
+    def get_all_lessons(self, course_id: _uuid.UUID) -> list[_types.Lesson]:
+
+        self.get_course(course_id)
+
+        with self.__database.cursor() as cursor:
+            cursor.execute(f'''
+                SELECT *
+                FROM {DBHelper.__TABLE_LESSONS}
+                WHERE "course_id" = %s
+            ''', (course_id, ))
+            return [_types.Lesson.parse(row) for row in cursor.fetchall()]
 
 
 

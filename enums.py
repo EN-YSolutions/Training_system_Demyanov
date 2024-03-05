@@ -9,6 +9,7 @@ class HTTP(_Enum):
     Unauthorized = 401
     Forbidden = 403
     NotFound = 404
+    UnprocessableEntity = 422
 
     InternalServerError = 500
     NotImplemented = 501
@@ -32,3 +33,5 @@ class ErrorText(_Enum):
     UserNotFound = 'Пользователь не найден'
     GroupNotFound = 'Группа не найдена'
     CourseNotFound = 'Курс не найден'
+
+    UserIsNotAStudent = 'Пользователь не является студентом'

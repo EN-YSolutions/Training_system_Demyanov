@@ -4,9 +4,9 @@ import * as alert from './alert.js';
 
 document.addEventListener('DOMContentLoaded', () =>
 {
-    const spinner = document.querySelector('#spinner');
-    const empty_warn = document.querySelector('#empty_warn');
-    const list = document.querySelector('#list');
+    const spinner = document.getElementById('spinner');
+    const empty_warn = document.getElementById('empty_warn');
+    const list = document.getElementById('list');
 
     const data = new FormData();
     data.append('depth', 1);
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () =>
         .then(result =>
         {
             if (result.courses.length == 0) {
-                empty_warn.removeAttribute('style');
+                empty_warn.dataset.eduHide = false;
                 return;
             }
 
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () =>
             alert.show(error.api? `Ошибка API: ${error.description}` : error.http? `Ошибка HTTP: ${error.code} ${error.text}` : 'Неизвестная ошибка', 10000);
         })
         .finally(() => {
-            spinner.setAttribute('style', 'display: none !important;');
+            spinner.dataset.eduHide = true;
         });
 });
 

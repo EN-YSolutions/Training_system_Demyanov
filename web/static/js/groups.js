@@ -4,31 +4,31 @@ import * as alert from './alert.js';
 
 document.addEventListener('DOMContentLoaded', () =>
 {
-    const spinner = document.querySelector('#spinner');
-    const empty_warn = document.querySelector('#empty_warn');
-    const list = document.querySelector('#list');
+    const spinner = document.getElementById('spinner');
+    const empty_warn = document.getElementById('empty_warn');
+    const list = document.getElementById('list');
 
     const data = new FormData();
     data.append('depth', 1);
 
     api.make_request(api.GET_GROUPS, data)
-        .then(result =>
-        {
-            if (result.entries.length == 0) {
-                empty_warn.removeAttribute('style');
-                return;
-            }
+    .then(result =>
+    {
+        if (result.entries.length == 0) {
+            empty_warn.dataset.eduHide = false;
+            return;
+        }
 
-            result.entries.forEach(e => {
-                list.append(make_list_item(e));
-            });
-        })
-        .catch(error => {
-            alert.show(error.api? `Ошибка API: ${error.description}` : error.http? `Ошибка HTTP: ${error.code} ${error.text}` : 'Неизвестная ошибка', 10000);
-        })
-        .finally(() => {
-            spinner.setAttribute('style', 'display: none !important;');
+        result.entries.forEach(e => {
+            list.append(make_list_item(e));
         });
+    })
+    .catch(error => {
+        alert.show(error.api? `Ошибка API: ${error.description}` : error.http? `Ошибка HTTP: ${error.code} ${error.text}` : 'Неизвестная ошибка', 10000);
+    })
+    .finally(() => {
+        spinner.dataset.eduHide = true;
+    });
 });
 
 

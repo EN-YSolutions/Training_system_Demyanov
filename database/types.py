@@ -148,6 +148,10 @@ class Lesson:
     title: str
     text: str | None
 
+    @staticmethod
+    def parse(row: tuple) -> _types.Lesson:
+        return _types.Lesson(row[0], row[1], row[2], row[3], row[4])
+
     def as_dict(self, database: _database.DBHelper | None = None, depth: int = 0) -> dict[str, _typing.Any]:
         if depth == 0 or not database:
             return {

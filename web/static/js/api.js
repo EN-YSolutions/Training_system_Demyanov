@@ -14,6 +14,8 @@ export const DELETE_GROUP_MEMBER = 'delete_group_member';
 export const GET_COURSES = 'get_courses';
 export const GET_COURSE = 'get_course';
 
+export const GET_LESSONS = 'get_lessons';
+
 
 export const make_request = (method, args) => new Promise((resolve, reject) =>
 {

@@ -4,20 +4,19 @@ import * as alert from './alert.js';
 
 document.addEventListener('DOMContentLoaded', () =>
 {
-    const spinner = document.querySelector('#spinner');
-    const empty_warn = document.querySelector('#empty_warn');
-
-    const user = document.querySelector('#user');
-
-    const user_name = document.querySelector('#user_name');
-    const user_login = document.querySelector('#user_login');
-    const user_role = document.querySelector('#user_role');
-    const user_balance = document.querySelector('#user_balance');
-    const user_scoring_system = document.querySelector('#user_scoring_system');
-    const user_id = document.querySelector('#user_id');
+    const spinner = document.getElementById('spinner');
 
     const params = new URLSearchParams(window.location.search);
 
+
+    // Карточка #1. Информация о пользователе
+    const user = document.getElementById('user');
+    const user_name = document.getElementById('user_name');
+    const user_login = document.getElementById('user_login');
+    const user_role = document.getElementById('user_role');
+    const user_balance = document.getElementById('user_balance');
+    const user_scoring_system = document.getElementById('user_scoring_system');
+    const user_id = document.getElementById('user_id');
 
     let data = new FormData();
     data.append('id', params.get('id'));
@@ -25,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () =>
     api.make_request(api.GET_USER, data)
     .then(result =>
     {
-        user.removeAttribute('style');
+        user.dataset.eduHide = false;
 
         user_name.innerText = result.user.name;
         user_login.innerText = result.user.login;
@@ -34,29 +33,29 @@ document.addEventListener('DOMContentLoaded', () =>
         if (result.user.balance)
             user_balance.innerText = result.user.balance;
         else
-            user_balance.parentElement.setAttribute('style', 'display: none !important');
+            user_balance.parentElement.dataset.eduHide = true;
 
         if (result.user.scoring_system)
             user_scoring_system.innerText = result.user.scoring_system;
         else
-            user_scoring_system.parentElement.setAttribute('style', 'display : none !important');
+            user_scoring_system.parentElement.dataset.eduHide = true;
 
         user_id.innerText = result.user.id;
     })
     .catch(error => {
         alert.show(error.api? `Ошибка API: ${error.description}` : error.http? `Ошибка HTTP: ${error.code} ${error.text}` : 'Неизвестная ошибка', 10000);
-        user.setAttribute('style', 'display: none !important');
+        user.dataset.eduHide = true;
     })
     .finally(() => {
         spinner.setAttribute('style', 'display: none !important;');
     });
 
 
-    const user_groups = document.querySelector('#user_groups');
-
-    const user_groups_empty = document.querySelector('#user_groups_empty');
-    const user_groups_table = document.querySelector('#user_groups_table');
-    const user_groups_table_body = document.querySelector('#user_groups_table_body');
+    // Карточка #2. Группы, в которых состоит пользователь
+    const groups = document.getElementById('groups');
+    const groups_empty = document.getElementById('groups_empty');
+    const groups_table = document.getElementById('groups_table');
+    const groups_table_body = document.getElementById('groups_table_body');
 
     data = new FormData();
     data.append('id', params.get('id'));
@@ -65,28 +64,28 @@ document.addEventListener('DOMContentLoaded', () =>
     api.make_request(api.GET_USER_GROUPS, data)
     .then(result =>
     {
-        user_groups.removeAttribute('style');
+        groups.dataset.eduHide = false;
 
         if (result.groups.length == 0) {
-            user_groups_empty.removeAttribute('style');
+            groups_empty.dataset.eduHide = false;
             return;
         }
 
-        user_groups_table.removeAttribute('style');
+        groups_table.dataset.eduHide = false;
 
         result.groups.forEach(e =>
         {
-            user_groups_table_body.append(make_group_list_item(e, params.get('id'), () => {
-                if (user_groups_table_body.childElementCount == 0) {
-                    user_groups_table.setAttribute('style', 'display: none !important');
-                    user_groups_empty.removeAttribute('style');
+            groups_table_body.append(make_group_list_item(e, params.get('id'), () => {
+                if (groups_table_body.childElementCount == 0) {
+                    groups_table.dataset.eduHide = true;
+                    groups_empty.dataset.eduHide = false;
                 }
             }));
         });
     })
     .catch(error => {
         alert.show(error.api? `Ошибка API: ${error.description}` : error.http? `Ошибка HTTP: ${error.code} ${error.text}` : 'Неизвестная ошибка', 10000);
-        user_groups.setAttribute('style', 'display: none !important');
+        groups.dataset.eduHide = true;
     });
 });
 
@@ -96,10 +95,10 @@ const make_group_list_item = (e, user_id, on_delete) =>
     const tr = document.createElement('tr');
 
     const td_group = document.createElement('td');
-    td_group.innerText = e.title;
+    td_group.innerHTML = `<a href="/group?id=${e.id}">${e.title}</a>`;
 
     const td_course = document.createElement('td');
-    td_course.innerText = e.course.title;
+    td_course.innerHTML = `<a href="/course?id=${e.course.id}">${e.course.title}</a>`;
 
     const td_delete = document.createElement('td');
 

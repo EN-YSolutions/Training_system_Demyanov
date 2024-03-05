@@ -302,6 +302,8 @@ def add_group_member(token: dict[str, Any]) -> Response:
         return APIError(HTTP.NotFound.value, ErrorText.GroupNotFound.value)
     except UserNotFoundException:
         return APIError(HTTP.NotFound.value, ErrorText.UserNotFound.value)
+    except UserIsNotAStudentException:
+        return APIError(HTTP.UnprocessableEntity.value, ErrorText.UserIsNotAStudent.value)
     except:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
 
@@ -369,6 +371,32 @@ def get_course(token: dict[str, Any]) -> Response:
         return APIError(HTTP.NotFound.value, ErrorText.CourseNotFound.value)
     except:
         return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
+
+
+
+
+
+# -------------------------------------------------- Уроки --------------------------------------------------
+
+# Получение списка всех уроков в курсе
+@app.post('/api/get_lessons')
+@Authentication
+def get_lessons(token: dict[str, Any]) -> Response:
+
+    try:
+        course_id: UUID = UUID(request.form['course_id'])
+        depth: int = int(request.form['depth'])
+    except:
+        return APIError(HTTP.BadRequest.value, ErrorText.InvalidRequestFormat.value)
+
+    try:
+        lessons: list[Lesson] = database.get_all_lessons(course_id)
+        return APIResult({'lessons': [i.as_dict(database, depth) for i in lessons]})
+    except CourseNotFoundException:
+        return APIError(HTTP.NotFound.value, ErrorText.CourseNotFound.value)
+    except:
+        return APIError(HTTP.InternalServerError.value, ErrorText.InternalServerError.value)
+
 
 
 

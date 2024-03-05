@@ -14,5 +14,5 @@ export const show = (message, timeout) =>
         alert.remove();
     }, timeout);
 
-    document.querySelector('#alerts').prepend(alert);
+    document.getElementById('alerts').prepend(alert);
 };

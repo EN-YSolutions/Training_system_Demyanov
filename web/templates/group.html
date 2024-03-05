@@ -7,11 +7,7 @@
     <div class="spinner-border spinner-border-sm"></div>
 </div>
 
-<div class="d-flex justify-content-center mt-3 text-secondary" style="display: none !important;" id="empty_warn">
-    Группа не найдена
-</div>
-
-<div class="card my-3" id="group" style="display: none !important;">
+<div class="card my-3" id="group" data-edu-hide="true">
     <div class="card-header" id="group_title"></div>
     <div class="card-body">
         Куратор: <span id="group_curator_name"></span><br>
@@ -20,16 +16,16 @@
     </div>
 </div>
 
-<div class="card my-3" id="group_members" style="display: none !important;">
+<div class="card my-3" id="members" data-edu-hide="true">
     <div class="card-header">
         Участники
     </div>
     <div class="card-body">
 
-        <form id="group_members_add">
+        <form id="members_form">
             <div class="row g-3">
                 <div class="col">
-                    <input type="text" class="form-control" name="user_id" id="group_members_add_user_id" required placeholder="ID пользователя">
+                    <input type="text" class="form-control" name="user_id" id="members_form_user_id" required placeholder="ID пользователя">
                 </div>
                 <div class="col col-auto">
                     <button type="submit" class="btn btn-outline-success">Добавить</button>
@@ -38,9 +34,9 @@
             <span class="d-block mt-1 text-secondary">Нажмите кнопку &#171;Выбрать&#187; на странице <a href="/users">Список пользователей</a>, чтобы автоматически вставить ID пользователя здесь</span>
         </form>
 
-        <span class="d-block mt-3" id="group_members_empty" style="display: none !important;">В группе нет ни одного пользователя</span>
+        <span class="d-block mt-3" id="members_empty" data-edu-hide="true">В группе нет ни одного пользователя</span>
 
-        <table class="m-0 mt-3 table table-hover" id="group_members_table" style="display: none !important;">
+        <table class="m-0 mt-3 table table-hover" id="members_table" data-edu-hide="true">
             <thead>
                 <tr>
                     <th scope="col" class="col-5">Имя</th>
@@ -48,7 +44,7 @@
                     <th scope="col" class="col-2">Удаление из группы</th>
                 </tr>
             </thead>
-            <tbody id="group_members_table_body">
+            <tbody id="members_table_body">
             </tbody>
         </table>
 
